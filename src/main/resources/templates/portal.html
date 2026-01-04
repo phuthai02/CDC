@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDC Portal</title>
+    <link rel="stylesheet" href="css/portal.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>CDC PORTAL 2026</h1>
+    </div>
+
+    <div class="stats-container">
+        <div class="stat-card">
+            <h3>Tổng số người đã nhận số</h3>
+            <div class="number" id="total-count">0</div>
+        </div>
+        <div class="stat-card">
+            <h3>Số may mắn cao nhất</h3>
+            <div class="number" id="max-number">000</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Tìm kiếm theo tên hoặc số điện thoại...">
+        </div>
+        <button class="refresh-btn" id="refresh-btn">Tải lại dữ liệu</button>
+        <button class="refresh-btn" id="export-excel-btn">Tải Excel</button>
+    </div>
+
+    <div class="table-container">
+        <table id="employees-table">
+            <thead>
+            <tr>
+                <th>STT</th>
+                <th>Số May Mắn</th>
+                <th>Họ và Tên</th>
+                <th>Số Điện Thoại</th>
+                <th>Device ID</th>
+            </tr>
+            </thead>
+            <tbody id="table-body">
+            <tr>
+                <td colspan="6" class="loading">Đang tải dữ liệu</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="js/portal.js"></script>
+</body>
+</html>

@@ -1,0 +1,824 @@
+/* ==================== RESPONSIVE DESIGN ==================== */
+
+/* Large Desktop - 1920px and above */
+@media (min-width: 1920px) {
+    .welcome-container,
+    .form-container,
+    .result-container {
+        max-width: 1000px;
+    }
+
+    .welcome-container h1 {
+        font-size: 3.2em;
+        margin-bottom: 30px;
+    }
+
+    .greeting-title {
+        font-size: 1.6em;
+        margin-bottom: 35px;
+    }
+
+    .greeting-text {
+        font-size: 1.25em;
+        line-height: 2;
+        margin-bottom: 35px;
+        padding: 0 30px;
+    }
+
+    .signature {
+        font-size: 1.35em;
+        margin-bottom: 45px;
+        padding: 0 30px;
+    }
+
+    #start-btn {
+        padding: 22px 80px;
+        font-size: 1.5em;
+    }
+
+    .form-container h2,
+    .result-container h2 {
+        font-size: 2.5em;
+        margin-bottom: 25px;
+    }
+
+    .form-subtitle {
+        font-size: 1.2em;
+        margin-bottom: 40px;
+    }
+
+    .form-group {
+        margin-bottom: 30px;
+    }
+
+    .form-group label {
+        font-size: 1.2em;
+        margin-bottom: 10px;
+    }
+
+    .form-group input {
+        padding: 18px 25px;
+        font-size: 1.15em;
+    }
+
+    #submit-btn {
+        padding: 22px;
+        font-size: 1.4em;
+    }
+
+    .lucky-number {
+        font-size: 6em;
+        margin: 40px 0;
+    }
+
+    .result-message {
+        font-size: 1.5em;
+        margin-bottom: 25px;
+    }
+
+    .error-result {
+        font-size: 1.7em;
+        margin: 40px 0;
+    }
+
+    .horse-left, .horse-right {
+        width: 400px;
+        margin-bottom: 120px;
+    }
+
+    .petal {
+        width: 25px;
+        height: 25px;
+    }
+}
+
+/* Desktop - 1440px to 1919px */
+@media (min-width: 1440px) and (max-width: 1919px) {
+    .welcome-container,
+    .form-container,
+    .result-container {
+        max-width: 900px;
+    }
+
+    .welcome-container h1 {
+        font-size: 2.8em;
+        margin-bottom: 25px;
+    }
+
+    .greeting-title {
+        font-size: 1.45em;
+        margin-bottom: 30px;
+    }
+
+    .greeting-text {
+        font-size: 1.15em;
+        line-height: 1.95;
+        margin-bottom: 30px;
+        padding: 0 25px;
+    }
+
+    .signature {
+        font-size: 1.25em;
+        margin-bottom: 40px;
+        padding: 0 25px;
+    }
+
+    #start-btn {
+        padding: 20px 70px;
+        font-size: 1.4em;
+    }
+
+    .form-container h2,
+    .result-container h2 {
+        font-size: 2.3em;
+    }
+
+    .form-subtitle {
+        font-size: 1.15em;
+        margin-bottom: 38px;
+    }
+
+    .form-group {
+        margin-bottom: 28px;
+    }
+
+    .form-group label {
+        font-size: 1.15em;
+    }
+
+    .form-group input {
+        padding: 17px 23px;
+        font-size: 1.1em;
+    }
+
+    #submit-btn {
+        padding: 20px;
+        font-size: 1.3em;
+    }
+
+    .lucky-number {
+        font-size: 5.5em;
+        margin: 35px 0;
+    }
+
+    .result-message {
+        font-size: 1.4em;
+    }
+
+    .error-result {
+        font-size: 1.6em;
+        margin: 35px 0;
+    }
+
+    .horse-left, .horse-right {
+        width: 350px;
+        margin-bottom: 110px;
+    }
+
+    .footer-image {
+        margin-bottom: -50px;
+    }
+
+    .petal {
+        width: 23px;
+        height: 23px;
+    }
+}
+
+/* Standard Desktop - 1024px to 1439px */
+@media (min-width: 1024px) and (max-width: 1439px) {
+    .welcome-container,
+    .form-container,
+    .result-container {
+        max-width: 750px;
+    }
+
+    .welcome-container h1 {
+        font-size: 2.3em;
+    }
+
+    .greeting-title {
+        font-size: 1.25em;
+    }
+
+    .greeting-text {
+        font-size: 1.05em;
+        padding: 0 15px;
+    }
+
+    .signature {
+        font-size: 1.15em;
+        padding: 0 15px;
+    }
+
+    .form-container h2,
+    .result-container h2 {
+        font-size: 1.9em;
+    }
+
+    .horse-left, .horse-right {
+        width: 200px;
+        margin-bottom: 60px;
+    }
+
+    .footer-image {
+        margin-bottom: -20px;
+    }
+
+    .petal {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* Tablet Landscape - 769px to 1023px */
+@media (min-width: 769px) and (max-width: 1023px) {
+
+    .header-left, .header-right {
+        height: 15vh;
+    }
+
+    .welcome-container,
+    .form-container,
+    .result-container {
+        max-width: 700px;
+    }
+
+    .welcome-container h1 {
+        font-size: 2.1em;
+        margin-bottom: 18px;
+    }
+
+    .greeting-title {
+        font-size: 1.15em;
+        margin-bottom: 22px;
+    }
+
+    .greeting-text {
+        font-size: 1em;
+        line-height: 1.85;
+        margin-bottom: 22px;
+        padding: 0 12px;
+    }
+
+    .signature {
+        font-size: 1.1em;
+        margin-bottom: 32px;
+        padding: 0 12px;
+    }
+
+    #start-btn {
+        padding: 16px 55px;
+        font-size: 1.2em;
+    }
+
+    .form-container h2,
+    .result-container h2 {
+        font-size: 1.8em;
+        margin-bottom: 18px;
+    }
+
+    .form-subtitle {
+        font-size: 1em;
+        margin-bottom: 32px;
+    }
+
+    .form-group {
+        margin-bottom: 23px;
+    }
+
+    .form-group label {
+        font-size: 1.02em;
+    }
+
+    .form-group input {
+        padding: 14px 18px;
+        font-size: 0.98em;
+    }
+
+    #submit-btn {
+        padding: 17px;
+        font-size: 1.15em;
+    }
+
+    .lucky-number {
+        font-size: 4.5em;
+        margin: 28px 0;
+    }
+
+    .result-message {
+        font-size: 1.2em;
+    }
+
+    .error-result {
+        font-size: 1.4em;
+        margin: 28px 0;
+    }
+
+    .horse-left, .horse-right {
+        width: 170px;
+        margin-bottom: 40px;
+    }
+
+    .footer-image {
+        margin-bottom: -20px;
+    }
+
+    .petal {
+        width: 17px;
+        height: 17px;
+    }
+}
+
+/* Tablet & Mobile - 768px and below */
+@media (max-width: 768px) {
+
+    .header-left, .header-right {
+        height: 11vh;
+    }
+
+    .horse-left, .horse-right {
+        width: 150px;
+        margin-bottom: 10px;
+    }
+
+    .footer-image {
+        margin-bottom: 0px;
+    }
+
+    .petal {
+        width: 15px;
+        height: 15px;
+    }
+
+    /* Welcome Screen */
+    #welcome-screen {
+        padding: 10px;
+    }
+
+    .welcome-container {
+        padding: 30px 15px;
+        max-width: 95%;
+    }
+
+    .welcome-container h1 {
+        font-size: 1.5em;
+        margin-bottom: 15px;
+    }
+
+    .greeting-title {
+        font-size: 1em;
+        margin-bottom: 20px;
+    }
+
+    .greeting-text {
+        font-size: 0.9em;
+        padding: 0 5px;
+        margin-bottom: 20px;
+        line-height: 1.7;
+    }
+
+    .signature {
+        padding: 0 5px;
+        font-size: 0.9em;
+        margin-bottom: 25px;
+    }
+
+    #start-btn {
+        padding: 12px 30px;
+        font-size: 1em;
+    }
+
+    /* Form Screen */
+    .form-container {
+        padding: 30px 20px;
+        max-width: 95%;
+    }
+
+    .form-container h2 {
+        font-size: 1.5em;
+    }
+
+    .form-subtitle {
+        font-size: 0.95em;
+        margin-bottom: 25px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        font-size: 1em;
+    }
+
+    .form-group input {
+        padding: 12px 15px;
+        font-size: 0.95em;
+    }
+
+    #submit-btn {
+        padding: 15px;
+        font-size: 1.1em;
+    }
+
+    /* Result Screen */
+    .result-container {
+        max-width: 95%;
+    }
+
+    .result-container h2 {
+        font-size: 1.7em;
+        margin-bottom: 25px;
+    }
+
+    .lucky-number {
+        font-size: 3.5em;
+        margin: 25px 0;
+    }
+
+    .result-message {
+        font-size: 1.1em;
+    }
+
+    .error-result {
+        font-size: 1.2em;
+        margin: 25px 0;
+    }
+}
+
+/* Small Mobile - 480px and below */
+@media (max-width: 480px) {
+
+    .header-left, .header-right {
+        height: 9vh;
+    }
+
+    .horse-left, .horse-right {
+        width: 120px;
+        margin-bottom: 5px;
+    }
+
+    .petal {
+        width: 12px;
+        height: 12px;
+    }
+
+    /* Welcome Screen */
+    .welcome-container {
+        padding: 25px 12px;
+        border-radius: 20px;
+        border-width: 3px;
+    }
+
+    .welcome-container h1 {
+        font-size: 1.3em;
+        margin-bottom: 12px;
+    }
+
+    .greeting-title {
+        font-size: 0.95em;
+        margin-bottom: 18px;
+    }
+
+    .greeting-text {
+        font-size: 0.85em;
+        line-height: 1.6;
+        margin-bottom: 18px;
+    }
+
+    .signature {
+        font-size: 0.85em;
+        margin-bottom: 22px;
+    }
+
+    #start-btn {
+        padding: 12px 25px;
+        font-size: 0.95em;
+    }
+
+    /* Form Screen */
+    .form-container {
+        padding: 25px 15px;
+        border-radius: 20px;
+        border-width: 3px;
+    }
+
+    .form-container h2 {
+        font-size: 1.3em;
+        margin-bottom: 12px;
+    }
+
+    .form-subtitle {
+        font-size: 0.9em;
+        margin-bottom: 22px;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-group label {
+        font-size: 0.95em;
+        margin-bottom: 6px;
+    }
+
+    .form-group input {
+        padding: 11px 14px;
+        font-size: 0.9em;
+    }
+
+    #submit-btn {
+        padding: 14px;
+        font-size: 1.05em;
+    }
+
+    /* Result Screen */
+    .result-container {
+        border-radius: 20px;
+        border-width: 3px;
+    }
+
+    .result-container h2 {
+        font-size: 1.5em;
+        margin-bottom: 22px;
+    }
+
+    .lucky-number {
+        font-size: 3em;
+        margin: 22px 0;
+    }
+
+    .result-message {
+        font-size: 1em;
+        line-height: 1.5;
+    }
+
+    .error-result {
+        font-size: 1.1em;
+        margin: 22px 0;
+    }
+}
+
+/* Extra Small Mobile - 375px and below */
+@media (max-width: 375px) {
+
+    .header-left, .header-right {
+        height: 9vh;
+    }
+
+    .footer-image {
+        margin-bottom: 0px;
+    }
+
+    .horse-left, .horse-right {
+        margin-bottom: 10px;
+        width: 100px;
+    }
+
+    .petal {
+        width: 10px;
+        height: 10px;
+    }
+
+    /* Welcome Screen */
+    .welcome-container {
+        padding: 22px 10px;
+    }
+
+    .welcome-container h1 {
+        font-size: 1.2em;
+        margin-bottom: 10px;
+    }
+
+    .greeting-title {
+        font-size: 0.9em;
+        margin-bottom: 15px;
+    }
+
+    .greeting-text {
+        font-size: 0.8em;
+        margin-bottom: 15px;
+    }
+
+    .signature {
+        font-size: 0.8em;
+        margin-bottom: 20px;
+    }
+
+    #start-btn {
+        padding: 10px 22px;
+        font-size: 0.9em;
+    }
+
+    /* Form Screen */
+    .form-container {
+        padding: 22px 12px;
+    }
+
+    .form-container h2 {
+        font-size: 1.2em;
+        margin-bottom: 10px;
+    }
+
+    .form-subtitle {
+        font-size: 0.85em;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        font-size: 0.9em;
+    }
+
+    .form-group input {
+        padding: 10px 12px;
+        font-size: 0.85em;
+    }
+
+    #submit-btn {
+        padding: 13px;
+        font-size: 1em;
+    }
+
+    /* Result Screen */
+    .result-container {
+        padding: 30px 15px;
+    }
+
+    .result-container h2 {
+        font-size: 1.3em;
+        margin-bottom: 20px;
+    }
+
+    .lucky-number {
+        font-size: 2.5em;
+        margin: 20px 0;
+    }
+
+    .result-message {
+        font-size: 0.95em;
+    }
+
+    .error-result {
+        font-size: 1em;
+        margin: 20px 0;
+    }
+}
+
+/* Very Small Mobile - 320px and below */
+@media (max-width: 320px) {
+    /* Decorative Elements */
+    .horse-left, .horse-right {
+        width: 80px;
+        margin-bottom: 5px;
+    }
+
+    .petal {
+        width: 8px;
+        height: 8px;
+    }
+
+    /* Welcome Screen */
+    .welcome-container {
+        padding: 20px 8px;
+        border-radius: 15px;
+    }
+
+    .welcome-container h1 {
+        font-size: 1.1em;
+        margin-bottom: 8px;
+    }
+
+    .greeting-title {
+        font-size: 0.85em;
+        margin-bottom: 12px;
+    }
+
+    .greeting-text {
+        font-size: 0.75em;
+        margin-bottom: 12px;
+        line-height: 1.5;
+    }
+
+    .signature {
+        font-size: 0.75em;
+        margin-bottom: 18px;
+    }
+
+    #start-btn {
+        padding: 9px 20px;
+        font-size: 0.85em;
+        letter-spacing: 0.5px;
+    }
+
+    /* Form Screen */
+    .form-container {
+        padding: 20px 10px;
+        border-radius: 15px;
+    }
+
+    .form-container h2 {
+        font-size: 1.1em;
+        margin-bottom: 8px;
+    }
+
+    .form-subtitle {
+        font-size: 0.8em;
+        margin-bottom: 18px;
+    }
+
+    .form-group {
+        margin-bottom: 14px;
+    }
+
+    .form-group label {
+        font-size: 0.85em;
+        margin-bottom: 5px;
+    }
+
+    .form-group input {
+        padding: 9px 10px;
+        font-size: 0.8em;
+        border-radius: 10px;
+    }
+
+    .error-message {
+        font-size: 0.8em;
+    }
+
+    #submit-btn {
+        padding: 12px;
+        font-size: 0.95em;
+        letter-spacing: 0.5px;
+    }
+
+    /* Result Screen */
+    .result-container {
+        padding: 25px 12px;
+        border-radius: 15px;
+    }
+
+    .result-container h2 {
+        font-size: 1.2em;
+        margin-bottom: 18px;
+    }
+
+    .lucky-number {
+        font-size: 2.2em;
+        margin: 18px 0;
+    }
+
+    .result-message {
+        font-size: 0.9em;
+        line-height: 1.4;
+    }
+
+    .error-result {
+        font-size: 0.95em;
+        margin: 18px 0;
+    }
+}
+
+/* Landscape Mode for Mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    #welcome-screen,
+    #form-screen,
+    #result-screen {
+        align-items: flex-start;
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+
+    .welcome-container,
+    .form-container,
+    .result-container {
+        margin: 10px auto;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .welcome-container h1,
+    .form-container h2,
+    .result-container h2 {
+        font-size: 1.3em;
+        margin-bottom: 10px;
+    }
+
+    .greeting-text,
+    .form-group {
+        margin-bottom: 12px;
+    }
+
+    .lucky-number {
+        font-size: 2.5em;
+        margin: 15px 0;
+    }
+
+    .horse-left, .horse-right {
+        display: none;
+    }
+}
