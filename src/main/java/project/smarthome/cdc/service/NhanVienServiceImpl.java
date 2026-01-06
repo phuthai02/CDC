@@ -10,7 +10,10 @@ import project.smarthome.cdc.model.entity.NhanVien;
 import project.smarthome.cdc.repository.NhanVienRepository;
 
 import java.io.ByteArrayOutputStream;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -23,18 +26,45 @@ public class NhanVienServiceImpl implements NhanVienService {
     private static final Integer RESPONSE_ERROR = 500;
     private static final Integer RESPONSE_EXIST = 409;
     private static final Integer RESPONSE_NOT_FOUND = 404;
+    private static final String[] badSuffix = {"13", "49", "53"};
 
     @Override
     public CDCResponse create(NhanVien nhanVien) {
         CDCResponse response = new CDCResponse();
         try {
-            if (nhanVienRepository.existsByPhoneNumber(nhanVien.getPhoneNumber())) {
+            // Kiểm tra trùng lặp
+            NhanVien nhanVienDB = nhanVienRepository.findFirstByNameAndDateOfBirth(nhanVien.getName(), nhanVien.getDateOfBirth());
+            if (nhanVienDB != null) {
                 response.setCode(RESPONSE_EXIST);
+                response.setData(nhanVienDB);
                 return response;
             }
+
+            //Tạo deviceId
+            String deviceId = UUID.randomUUID().toString();
+            nhanVien.setDeviceId(deviceId);
+            nhanVien.setCreatedTime(new Timestamp(System.currentTimeMillis()));
+
+            //Validate id xấu
+            while (true) {
+                nhanVienDB = nhanVienRepository.save(nhanVien);
+                String idStr = nhanVienDB.getId().toString();
+                boolean isBad = false;
+                for (String s : badSuffix) {
+                    if (idStr.endsWith(s)) {
+                        isBad = true;
+                        break;
+                    }
+                }
+                if (!isBad) break;
+                nhanVienRepository.delete(nhanVienDB);
+            }
+
+            //Set data trả về
             response.setCode(RESPONSE_SUCCESS);
-            response.setData(nhanVienRepository.save(nhanVien));
+            response.setData(nhanVienDB);
         } catch (Exception e) {
+            log.info(e.getMessage());
             response.setCode(RESPONSE_ERROR);
         }
         return response;
@@ -121,7 +151,7 @@ public class NhanVienServiceImpl implements NhanVienService {
 
             // Tạo header row
             Row headerRow = sheet.createRow(0);
-            String[] headers = {"STT", "Số May Mắn", "Họ và Tên", "Số Điện Thoại", "Device ID"};
+            String[] headers = {"STT", "Số May Mắn", "Họ và Tên", "Ngày Sinh", "Tạo lúc"};
 
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
@@ -147,11 +177,11 @@ public class NhanVienServiceImpl implements NhanVienService {
                 cell2.setCellStyle(cellStyle);
 
                 Cell cell3 = row.createCell(3);
-                cell3.setCellValue(nhanVien.getPhoneNumber() != null ? nhanVien.getPhoneNumber() : "N/A");
+                cell3.setCellValue(nhanVien.getDateOfBirth() != null ? new SimpleDateFormat("dd/MM/yyyy").format(nhanVien.getDateOfBirth()) : "N/A");
                 cell3.setCellStyle(cellStyle);
 
                 Cell cell4 = row.createCell(4);
-                cell4.setCellValue(nhanVien.getDeviceId() != null ? nhanVien.getDeviceId() : "N/A");
+                cell4.setCellValue(nhanVien.getCreatedTime() != null ? new SimpleDateFormat("dd/MM/yyyy").format(nhanVien.getCreatedTime()) : "N/A");
                 cell4.setCellStyle(cellStyle);
             }
 

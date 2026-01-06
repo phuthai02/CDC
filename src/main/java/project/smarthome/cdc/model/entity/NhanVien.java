@@ -1,7 +1,11 @@
 package project.smarthome.cdc.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.sql.Date;
+import java.sql.Timestamp;
 
 @Data
 @Entity
@@ -16,9 +20,13 @@ public class NhanVien {
     @Column(name = "NAME", nullable = false)
     private String name;
 
-    @Column(name = "PHONE_NUMBER", nullable = false)
-    private String phoneNumber;
+    @Column(name = "DATE_OF_BIRTH", nullable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    private Date dateOfBirth;
 
     @Column(name = "DEVICE_ID", nullable = false)
     private String deviceId;
+
+    @Column(name = "CREATED_TIME", nullable = false)
+    private Timestamp createdTime;
 }

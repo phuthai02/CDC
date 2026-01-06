@@ -64,7 +64,7 @@ function loadEmployees() {
     const tableBody = document.getElementById('table-body');
     tableBody.innerHTML = '<tr><td colspan="6" class="loading">Đang tải dữ liệu</td></tr>';
 
-    fetch('/cdc/find-all')
+    fetch('/find-all')
         .then(response => response.json())
         .then(data => {
             if (data.code === 200) {
@@ -119,7 +119,7 @@ setInterval(loadEmployees, 10000);
 document.getElementById('export-excel-btn').addEventListener('click', function() {
     // Tạo link tải file
     const link = document.createElement('a');
-    link.href = '/cdc/export-excel';
+    link.href = '/export-excel';
     link.download = '';
     document.body.appendChild(link);
     link.click();
