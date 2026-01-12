@@ -8,42 +8,55 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import project.smarthome.cdc.model.dto.CDCResponse;
-import project.smarthome.cdc.model.entity.NhanVien;
-import project.smarthome.cdc.service.NhanVienService;
+import project.smarthome.cdc.model.entity.Member;
+import project.smarthome.cdc.service.MemberService;
+import project.smarthome.cdc.utils.JsonUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @RestController
-public class NhanVienRestController {
+public class MemberRestController {
 
     @Autowired
-    private NhanVienService nhanVienService;
+    private MemberService memberService;
 
     @PostMapping("")
-    public CDCResponse submit(@RequestBody NhanVien nhanVien) {
-        log.info("[CDC] submit");
-        return nhanVienService.create(nhanVien);
+    public CDCResponse create(@RequestBody Member member) {
+        log.info("[CDC] create: {}", JsonUtils.toJson(member));
+        return memberService.create(member);
+    }
+
+    @PutMapping("/{id}")
+    public CDCResponse update(@PathVariable("id") Integer id, @RequestBody Member member) {
+        log.info("[CDC] update: id={}, member={}", id, JsonUtils.toJson(member));
+        return memberService.update(id, member);
+    }
+
+    @DeleteMapping("/{id}")
+    public CDCResponse delete(@PathVariable("id") Integer id) {
+        log.info("[CDC] delete: id={}", id);
+        return memberService.delete(id);
     }
 
     @GetMapping("find-by-device")
     public CDCResponse findByDeviceId(@RequestParam("deviceId") String deviceId) {
-        log.info("[CDC] findByDevice");
-        return nhanVienService.findByDeviceId(deviceId);
+        log.info("[CDC] findByDevice: deviceId={}", deviceId);
+        return memberService.findByDeviceId(deviceId);
     }
 
     @GetMapping("find-all")
     public CDCResponse findAll() {
         log.info("[CDC] findAll");
-        return nhanVienService.findAll();
+        return memberService.findAll();
     }
 
     @GetMapping("export-excel")
     public ResponseEntity<ByteArrayResource> exportExcel() {
         log.info("[CDC] exportExcel");
         try {
-            byte[] excelData = nhanVienService.exportToExcel();
+            byte[] excelData = memberService.exportExcel();
 
             ByteArrayResource resource = new ByteArrayResource(excelData);
 

@@ -37,26 +37,34 @@ function updateStats() {
     document.getElementById('max-number').textContent = formatLuckyNumber(maxNumber);
 }
 
+function formatTime(ts) {
+    const d = new Date(ts);
+    return `${String(d.getHours()).padStart(2,'0')}:${
+        String(d.getMinutes()).padStart(2,'0')}:${
+        String(d.getSeconds()).padStart(2,'0')} - ${
+        String(d.getDate()).padStart(2,'0')}/${
+        String(d.getMonth()+1).padStart(2,'0')}/${
+        d.getFullYear()}`;
+}
+
 // Render bảng
 function renderTable(employees) {
     const tableBody = document.getElementById('table-body');
 
-    if (employees.length === 0) {
+    if (!employees.length) {
         tableBody.innerHTML = '<tr><td colspan="6" class="empty">Không có dữ liệu</td></tr>';
         return;
     }
 
-    const rows = employees.map((emp, index) => `
-            <tr>
-                <td>${index + 1}</td>
-                <td><span class="lucky-number">${formatLuckyNumber(emp.id)}</span></td>
-                <td>${emp.name || 'N/A'}</td>
-                <td>${emp.phoneNumber || 'N/A'}</td>
-                <td>${emp.deviceId || 'N/A'}</td>
-            </tr>
-        `).join('');
-
-    tableBody.innerHTML = rows;
+    tableBody.innerHTML = employees.map((emp, i) => `
+        <tr>
+            <td>${i + 1}</td>
+            <td><span class="lucky-number">${formatLuckyNumber(emp.id)}</span></td>
+            <td>${emp.name || 'N/A'}</td>
+            <td>${emp.dateOfBirth || 'N/A'}</td>
+            <td>${emp.createdTime ? formatTime(emp.createdTime) : 'N/A'}</td>
+        </tr>
+    `).join('');
 }
 
 // Load dữ liệu từ API

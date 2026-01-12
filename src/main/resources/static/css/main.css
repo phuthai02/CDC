@@ -5,8 +5,17 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Baloo 2', cursive;
     overflow-x: hidden;
+    background-image: url("../images/background.jpg");
+    background-size: auto;
+    background-repeat: repeat;
+    background-position: top left;
+}
+
+input,
+button {
+    font-family: inherit;
 }
 
 .firework-gif {
@@ -55,7 +64,7 @@ body {
     z-index: 10001;
     pointer-events: none;
     display: block;
-    margin-bottom: -100px;
+    margin-bottom: -50px;
 }
 
 .horse-left, .horse-right {
@@ -114,7 +123,7 @@ body {
     width: 100%;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     text-align: center;
-    border: 5px solid #FFD700;
+    border: 5px solid #DC143C;
     position: relative;
     animation: fadeIn 1s ease-in;
 }
@@ -141,22 +150,6 @@ body {
     }
 }
 
-.welcome-container h1 {
-    font-size: 2.5em;
-    color: #DC143C;
-    margin-bottom: 20px;
-    font-weight: 900;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.welcome-container h2 {
-    font-size: 1.8em;
-    color: #DC143C;
-    margin-bottom: 30px;
-    font-weight: 900;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .greeting-text {
     text-align: justify;
     line-height: 1.9;
@@ -171,13 +164,13 @@ body {
     font-style: italic;
     color: #666;
     font-size: 1.15em;
-    margin-bottom: 35px;
-    font-weight: 500;
+    margin-bottom: 30px;
+    font-weight: 600;
     padding: 0 20px;
 }
 
 #start-btn {
-    padding: 18px 60px;
+    padding: 12px 40px;
     font-size: 1.3em;
     font-weight: bold;
     background: linear-gradient(135deg, #DC143C, #FF6347);
@@ -211,8 +204,6 @@ body {
     pointer-events: none;
     z-index: 10000;
     overflow: hidden;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
 }
 
 .petal {
@@ -225,17 +216,6 @@ body {
     animation: fall linear forwards;
     opacity: 0.8;
     z-index: 1;
-
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    -webkit-perspective: 1000px;
-    perspective: 1000px;
-    will-change: transform, opacity;
-
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
 }
 
 @keyframes fall {
@@ -257,16 +237,6 @@ body {
     100% {
         transform: translate3d(0, 100vh, 0) rotate(-360deg);
         opacity: 0;
-    }
-}
-
-@media not all and (min-resolution:.001dpcm) {
-    @supports (-webkit-appearance:none) {
-        .petal {
-            /* Thêm tối ưu cho Safari cũ */
-            -webkit-transform: translateZ(0);
-            transform: translateZ(0);
-        }
     }
 }
 
@@ -298,7 +268,7 @@ body {
     max-width: 600px;
     width: 100%;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    border: 5px solid #FFD700;
+    border: 5px solid #DC143C;
     animation: slideUp 0.8s ease-out;
 }
 
@@ -462,21 +432,22 @@ body {
 .result-container h2 {
     font-size: 2.2em;
     color: #FFD700;
-    margin-bottom: 10px;
     font-weight: bold;
 }
 
 .lucky-number {
+    font-family: "Baloo 2", sans-serif;
     font-size: 5em;
+    letter-spacing: 0.05em;
+    line-height: 1.1;
     color: #FFD700;
-    font-weight: bold;
-    margin: 30px 0;
+    font-weight: 800;
     text-shadow:
-            1px 1px 0px #CC9900,
-            2px 2px 0px #B38600,
-            3px 3px 0px #996600,
-            4px 4px 0px #805500,
-            5px 5px 10px rgba(0, 0, 0, 0.5);
+            1px 1px 0 #e6b800,
+            2px 2px 0 #cc9900,
+            3px 3px 0 #b38600,
+            4px 4px 0 #996600,
+            8px 8px 15px rgba(0, 0, 0, 0.6);
     animation: pulse 2s infinite;
 }
 
@@ -487,47 +458,4 @@ body {
     50% {
         transform: scale(1.05);
     }
-}
-
-.result-message {
-    font-size: 1.3em;
-    color: #333;
-    margin-bottom: 20px;
-    line-height: 1.6;
-}
-
-.error-result {
-    font-size: 1.5em;
-    color: #FFD700;
-    margin: 30px 0;
-    font-weight: 600;
-}
-
-/* Nút tải hình ảnh */
-.download-button {
-    padding: 15px 40px;
-    font-size: 1.1em;
-    font-weight: bold;
-    background: linear-gradient(135deg, #DC143C, #FF6347);
-    color: white;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 20px rgba(220, 20, 60, 0.4);
-    display: block;
-    margin: 30px auto 0;
-    z-index: 10005;
-    animation: fadeIn 1s ease-in 0.5s forwards;
-    opacity: 0;
-}
-
-.download-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 30px rgba(220, 20, 60, 0.6);
-    background: linear-gradient(135deg, #FF6347, #DC143C);
-}
-
-.download-button:active {
-    transform: translateY(-1px);
 }

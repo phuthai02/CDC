@@ -1,19 +1,11 @@
 /* ==================== RESPONSIVE DESIGN ==================== */
 
 /* Standard Desktop - 1024px to 1439px */
-@media (min-width: 1024px) {
+@media (max-width: 1439px) {
     .welcome-container,
     .form-container,
     .result-container {
         max-width: 750px;
-    }
-
-    .welcome-container h1 {
-        font-size: 2.3em;
-    }
-
-    .greeting-title {
-        font-size: 1.25em;
     }
 
     .greeting-text {
@@ -36,10 +28,6 @@
         margin-bottom: 60px;
     }
 
-    .footer-image {
-        margin-bottom: -20px;
-    }
-
     .petal {
         width: 18px;
         height: 18px;
@@ -59,26 +47,16 @@
         max-width: 700px;
     }
 
-    .welcome-container h1 {
-        font-size: 2.1em;
-        margin-bottom: 18px;
-    }
-
-    .greeting-title {
-        font-size: 1.15em;
-        margin-bottom: 22px;
-    }
-
     .greeting-text {
         font-size: 1em;
         line-height: 1.85;
-        margin-bottom: 22px;
+        margin-bottom: 18px;
         padding: 0 12px;
     }
 
     .signature {
         font-size: 1.1em;
-        margin-bottom: 32px;
+        margin-bottom: 27px;
         padding: 0 12px;
     }
 
@@ -118,25 +96,11 @@
 
     .lucky-number {
         font-size: 4.5em;
-        margin: 28px 0;
-    }
-
-    .result-message {
-        font-size: 1.2em;
-    }
-
-    .error-result {
-        font-size: 1.4em;
-        margin: 28px 0;
     }
 
     .horse-left, .horse-right {
         width: 170px;
         margin-bottom: 40px;
-    }
-
-    .footer-image {
-        margin-bottom: -20px;
     }
 
     .petal {
@@ -176,27 +140,17 @@
         max-width: 95%;
     }
 
-    .welcome-container h1 {
-        font-size: 1.5em;
-        margin-bottom: 15px;
-    }
-
-    .greeting-title {
-        font-size: 1em;
-        margin-bottom: 20px;
-    }
-
     .greeting-text {
         font-size: 0.9em;
         padding: 0 5px;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
         line-height: 1.7;
     }
 
     .signature {
         padding: 0 5px;
         font-size: 0.9em;
-        margin-bottom: 25px;
+        margin-bottom: 24px;
     }
 
     #start-btn {
@@ -244,21 +198,10 @@
 
     .result-container h2 {
         font-size: 1.7em;
-        margin-bottom: 25px;
     }
 
     .lucky-number {
         font-size: 3.5em;
-        margin: 25px 0;
-    }
-
-    .result-message {
-        font-size: 1.1em;
-    }
-
-    .error-result {
-        font-size: 1.2em;
-        margin: 25px 0;
     }
 }
 
@@ -286,25 +229,15 @@
         border-width: 3px;
     }
 
-    .welcome-container h1 {
-        font-size: 1.3em;
-        margin-bottom: 12px;
-    }
-
-    .greeting-title {
-        font-size: 0.95em;
-        margin-bottom: 18px;
-    }
-
     .greeting-text {
         font-size: 0.85em;
         line-height: 1.6;
-        margin-bottom: 18px;
+        margin-bottom: 14px;
     }
 
     .signature {
         font-size: 0.85em;
-        margin-bottom: 22px;
+        margin-bottom: 21px;
     }
 
     #start-btn {
@@ -356,22 +289,10 @@
 
     .result-container h2 {
         font-size: 1.5em;
-        margin-bottom: 22px;
     }
 
     .lucky-number {
         font-size: 3em;
-        margin: 22px 0;
-    }
-
-    .result-message {
-        font-size: 1em;
-        line-height: 1.5;
-    }
-
-    .error-result {
-        font-size: 1.1em;
-        margin: 22px 0;
     }
 }
 
@@ -401,24 +322,14 @@
         padding: 22px 10px;
     }
 
-    .welcome-container h1 {
-        font-size: 1.2em;
-        margin-bottom: 10px;
-    }
-
-    .greeting-title {
-        font-size: 0.9em;
-        margin-bottom: 15px;
-    }
-
     .greeting-text {
         font-size: 0.8em;
-        margin-bottom: 15px;
+        margin-bottom: 12px;
     }
 
     .signature {
         font-size: 0.8em;
-        margin-bottom: 20px;
+        margin-bottom: 18px;
     }
 
     #start-btn {
@@ -466,21 +377,10 @@
 
     .result-container h2 {
         font-size: 1.3em;
-        margin-bottom: 20px;
     }
 
     .lucky-number {
         font-size: 2.5em;
-        margin: 20px 0;
-    }
-
-    .result-message {
-        font-size: 0.95em;
-    }
-
-    .error-result {
-        font-size: 1em;
-        margin: 20px 0;
     }
 }
 
@@ -503,25 +403,15 @@
         border-radius: 15px;
     }
 
-    .welcome-container h1 {
-        font-size: 1.1em;
-        margin-bottom: 8px;
-    }
-
-    .greeting-title {
-        font-size: 0.85em;
-        margin-bottom: 12px;
-    }
-
     .greeting-text {
         font-size: 0.75em;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         line-height: 1.5;
     }
 
     .signature {
         font-size: 0.75em;
-        margin-bottom: 18px;
+        margin-bottom: 15px;
     }
 
     #start-btn {
@@ -579,61 +469,9 @@
 
     .result-container h2 {
         font-size: 1.2em;
-        margin-bottom: 18px;
     }
 
     .lucky-number {
         font-size: 2.2em;
-        margin: 18px 0;
-    }
-
-    .result-message {
-        font-size: 0.9em;
-        line-height: 1.4;
-    }
-
-    .error-result {
-        font-size: 0.95em;
-        margin: 18px 0;
-    }
-}
-
-/* Landscape Mode for Mobile */
-@media (max-height: 500px) and (orientation: landscape) {
-    #welcome-screen,
-    #form-screen,
-    #result-screen {
-        align-items: flex-start;
-        padding-top: 20px;
-        padding-bottom: 20px;
-    }
-
-    .welcome-container,
-    .form-container,
-    .result-container {
-        margin: 10px auto;
-        max-height: 90vh;
-        overflow-y: auto;
-    }
-
-    .welcome-container h1,
-    .form-container h2,
-    .result-container h2 {
-        font-size: 1.3em;
-        margin-bottom: 10px;
-    }
-
-    .greeting-text,
-    .form-group {
-        margin-bottom: 12px;
-    }
-
-    .lucky-number {
-        font-size: 2.5em;
-        margin: 15px 0;
-    }
-
-    .horse-left, .horse-right {
-        display: none;
     }
 }

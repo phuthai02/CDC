@@ -40,6 +40,8 @@ function checkExistingDevice() {
     } else {
         welcomeScreen.classList.add('show');
     }
+
+    // music.play();
 }
 
 // Tạo một cánh hoa rơi - Tối ưu cho Safari
@@ -62,10 +64,6 @@ function createSinglePetal() {
     // Thời gian rơi ngẫu nhiên
     const duration = 10 + Math.random() * 10;
     petal.style.animationDuration = duration + 's';
-
-    // Tối ưu cho Safari - Bật GPU acceleration
-    petal.style.transform = 'translate3d(0, 0, 0)';
-    petal.style.willChange = 'transform, opacity';
 
     // Một số cánh hoa rơi theo hướng ngược lại
     if (Math.random() > 0.5) {
@@ -323,7 +321,7 @@ registrationForm.addEventListener('submit', function(e) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Đang xử lý...';
 
-        const nhanVien = {
+        const member = {
             name: fullnameValidation.cleaned,
             dateOfBirth: birthdateValidation.formatted
         };
@@ -333,7 +331,7 @@ registrationForm.addEventListener('submit', function(e) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(nhanVien)
+            body: JSON.stringify(member)
         })
             .then(response => {
                 return response.json().then(data => {
@@ -356,8 +354,7 @@ function showErrorResult() {
     const resultContent = document.getElementById('result-content');
 
     resultContent.innerHTML = `
-        <h2>HỆ THỐNG</h2>
-        <p class="error-result">Có lỗi xảy ra</p>
+        <h2>HỆ THỐNG XẢY RA LỖI</h2>
     `;
 
     formScreen.style.animation = 'fadeOut 0.5s ease-out forwards';
@@ -376,7 +373,7 @@ function showSuccessResult(id, deviceId) {
     const resultContent = document.getElementById('result-content');
 
     resultContent.innerHTML = `
-        <h2>SỐ MAY MẮN</h2>
+        <h2>CON SỐ MAY MẮN</h2>
         <div class="lucky-number">${luckyNumber}</div>
     `;
 
