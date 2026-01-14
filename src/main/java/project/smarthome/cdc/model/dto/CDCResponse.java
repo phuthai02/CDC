@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CDCResponse {
-    private int code;
+    private Integer code;
     private Object data;
 }

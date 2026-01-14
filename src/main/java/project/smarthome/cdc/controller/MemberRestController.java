@@ -2,18 +2,13 @@ package project.smarthome.cdc.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import project.smarthome.cdc.model.dto.CDCResponse;
 import project.smarthome.cdc.model.entity.Member;
 import project.smarthome.cdc.service.MemberService;
 import project.smarthome.cdc.utils.JsonUtils;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @RestController
@@ -24,20 +19,8 @@ public class MemberRestController {
 
     @PostMapping("")
     public CDCResponse create(@RequestBody Member member) {
-        log.info("[CDC] create: {}", JsonUtils.toJson(member));
+        log.info("[CDC] create: member={}", JsonUtils.toJson(member));
         return memberService.create(member);
-    }
-
-    @PutMapping("/{id}")
-    public CDCResponse update(@PathVariable("id") Integer id, @RequestBody Member member) {
-        log.info("[CDC] update: id={}, member={}", id, JsonUtils.toJson(member));
-        return memberService.update(id, member);
-    }
-
-    @DeleteMapping("/{id}")
-    public CDCResponse delete(@PathVariable("id") Integer id) {
-        log.info("[CDC] delete: id={}", id);
-        return memberService.delete(id);
     }
 
     @GetMapping("find-by-device")
@@ -46,31 +29,43 @@ public class MemberRestController {
         return memberService.findByDeviceId(deviceId);
     }
 
-    @GetMapping("find-all")
-    public CDCResponse findAll() {
-        log.info("[CDC] findAll");
-        return memberService.findAll();
+    @PostMapping("login")
+    public CDCResponse login(@RequestBody Member member) {
+        log.info("[CDC] login: member={}", JsonUtils.toJson(member));
+        return memberService.login(member);
+    }
+
+    @PutMapping("/{id}")
+    public CDCResponse update(@PathVariable("id") Integer id,
+                              @RequestBody Member member,
+                              @RequestHeader(value = "actor", required = false) String actor) {
+        actor = actor != null ? java.net.URLDecoder.decode(actor, StandardCharsets.UTF_8) : null;
+        log.info("[CDC] update: id={}, actor={}, member={}", id, actor, JsonUtils.toJson(member));
+        return memberService.update(id, member, actor);
+    }
+
+    @DeleteMapping("/{id}")
+    public CDCResponse delete(@PathVariable("id") Integer id,
+                              @RequestHeader(value = "actor", required = false) String actor) {
+        actor = actor != null ? java.net.URLDecoder.decode(actor, StandardCharsets.UTF_8) : null;
+        log.info("[CDC] delete: id={}, actor={}", id, actor);
+        return memberService.delete(id, actor);
+    }
+
+    @GetMapping("get-data")
+    public CDCResponse getData(@RequestParam("keyWord") String keyWord,
+                               @RequestParam("page") Integer page,
+                               @RequestParam("pageSize") Integer pageSize,
+                               @RequestHeader(value = "actor", required = false) String actor) {
+        actor = actor != null ? java.net.URLDecoder.decode(actor, StandardCharsets.UTF_8) : null;
+        log.info("[CDC] getData: keyWord={}, page={}, pageSize={}, actor={}", keyWord, page, pageSize, actor);
+        return memberService.getData(keyWord, page, pageSize, actor);
     }
 
     @GetMapping("export-excel")
-    public ResponseEntity<ByteArrayResource> exportExcel() {
-        log.info("[CDC] exportExcel");
-        try {
-            byte[] excelData = memberService.exportExcel();
-
-            ByteArrayResource resource = new ByteArrayResource(excelData);
-
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy_HH-mm"));
-            String filename = "CDC_Portal_DanhSach_" + timestamp + ".xlsx";
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                    .contentLength(excelData.length)
-                    .body(resource);
-        } catch (Exception e) {
-            log.error("[CDC] Error exporting excel", e);
-            return ResponseEntity.internalServerError().build();
-        }
+    public CDCResponse exportExcel(@RequestHeader(value = "actor", required = false) String actor) {
+        actor = actor != null ? java.net.URLDecoder.decode(actor, StandardCharsets.UTF_8) : null;
+        log.info("[CDC] exportExcel: actor={}", actor);
+        return memberService.exportExcel(actor);
     }
 }
