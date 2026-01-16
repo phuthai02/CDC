@@ -9,16 +9,24 @@
     }
 
     .greeting-text {
-        font-size: 1.05em;
+        font-size: 1.2em;
         padding: 0 15px;
     }
 
     .signature {
-        font-size: 1.15em;
+        font-size: 1.2em;
         padding: 0 15px;
     }
 
-    .form-container h2,
+    .form-container h2 {
+        font-size: 2.8em;
+    }
+
+    .form-group input,
+    .form-group label {
+        font-size: 1.2em;
+    }
+
     .result-container h2 {
         font-size: 1.9em;
     }
@@ -48,7 +56,7 @@
     }
 
     .greeting-text {
-        font-size: 1em;
+        font-size: 1.1em;
         line-height: 1.85;
         margin-bottom: 18px;
         padding: 0 12px;
@@ -65,28 +73,26 @@
         font-size: 1.2em;
     }
 
-    .form-container h2,
+    .form-container h2 {
+        font-size: 2.6em;
+    }
+
+    .form-group input,
+    .form-group label {
+        font-size: 1.1em;
+    }
+
     .result-container h2 {
         font-size: 1.8em;
         margin-bottom: 18px;
-    }
-
-    .form-subtitle {
-        font-size: 1em;
-        margin-bottom: 32px;
     }
 
     .form-group {
         margin-bottom: 23px;
     }
 
-    .form-group label {
-        font-size: 1.02em;
-    }
-
     .form-group input {
         padding: 14px 18px;
-        font-size: 0.98em;
     }
 
     #submit-btn {
@@ -141,7 +147,7 @@
     }
 
     .greeting-text {
-        font-size: 0.9em;
+        font-size: 1em;
         padding: 0 5px;
         margin-bottom: 16px;
         line-height: 1.7;
@@ -149,7 +155,7 @@
 
     .signature {
         padding: 0 5px;
-        font-size: 0.9em;
+        font-size: 1em;
         margin-bottom: 24px;
     }
 
@@ -165,12 +171,7 @@
     }
 
     .form-container h2 {
-        font-size: 1.5em;
-    }
-
-    .form-subtitle {
-        font-size: 0.95em;
-        margin-bottom: 25px;
+        font-size: 2.4em;
     }
 
     .form-group {
@@ -183,7 +184,7 @@
 
     .form-group input {
         padding: 12px 15px;
-        font-size: 0.95em;
+        font-size: 1em;
     }
 
     #submit-btn {
@@ -230,13 +231,13 @@
     }
 
     .greeting-text {
-        font-size: 0.85em;
+        font-size: 1em;
         line-height: 1.6;
         margin-bottom: 14px;
     }
 
     .signature {
-        font-size: 0.85em;
+        font-size: 1em;
         margin-bottom: 21px;
     }
 
@@ -253,13 +254,8 @@
     }
 
     .form-container h2 {
-        font-size: 1.3em;
+        font-size: 1.8em;
         margin-bottom: 12px;
-    }
-
-    .form-subtitle {
-        font-size: 0.9em;
-        margin-bottom: 22px;
     }
 
     .form-group {
@@ -267,13 +263,13 @@
     }
 
     .form-group label {
-        font-size: 0.95em;
+        font-size: 1em;
         margin-bottom: 6px;
     }
 
     .form-group input {
         padding: 11px 14px;
-        font-size: 0.9em;
+        font-size: 1em;
     }
 
     #submit-btn {
@@ -323,12 +319,12 @@
     }
 
     .greeting-text {
-        font-size: 0.8em;
+        font-size: 0.9em;
         margin-bottom: 12px;
     }
 
     .signature {
-        font-size: 0.8em;
+        font-size: 0.9em;
         margin-bottom: 18px;
     }
 
@@ -343,13 +339,8 @@
     }
 
     .form-container h2 {
-        font-size: 1.2em;
+        font-size: 1.5em;
         margin-bottom: 10px;
-    }
-
-    .form-subtitle {
-        font-size: 0.85em;
-        margin-bottom: 20px;
     }
 
     .form-group {
@@ -362,7 +353,7 @@
 
     .form-group input {
         padding: 10px 12px;
-        font-size: 0.85em;
+        font-size: 0.9em;
     }
 
     #submit-btn {
@@ -404,13 +395,13 @@
     }
 
     .greeting-text {
-        font-size: 0.75em;
+        font-size: 0.8em;
         margin-bottom: 10px;
         line-height: 1.5;
     }
 
     .signature {
-        font-size: 0.75em;
+        font-size: 0.8em;
         margin-bottom: 15px;
     }
 
@@ -429,11 +420,6 @@
     .form-container h2 {
         font-size: 1.1em;
         margin-bottom: 8px;
-    }
-
-    .form-subtitle {
-        font-size: 0.8em;
-        margin-bottom: 18px;
     }
 
     .form-group {
