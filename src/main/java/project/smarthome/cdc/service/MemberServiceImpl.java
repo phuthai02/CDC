@@ -14,8 +14,10 @@ import org.springframework.util.StringUtils;
 import project.smarthome.cdc.model.dto.CDCResponse;
 import project.smarthome.cdc.model.entity.Member;
 import project.smarthome.cdc.model.entity.RequestLog;
+import project.smarthome.cdc.model.entity.SystemConfig;
 import project.smarthome.cdc.repository.MemberRepository;
 import project.smarthome.cdc.repository.RequestLogRepository;
+import project.smarthome.cdc.repository.SystemConfigRepository;
 import project.smarthome.cdc.utils.JsonUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -33,12 +35,17 @@ public class MemberServiceImpl implements MemberService {
     @Autowired
     private RequestLogRepository requestLogRepository;
 
+    @Autowired
+    private SystemConfigRepository systemConfigRepository;
+
     private static final Integer RESPONSE_SUCCESS = 200;
     private static final Integer RESPONSE_ERROR = 500;
     private static final Integer RESPONSE_EXIST = 409;
     private static final Integer RESPONSE_NOT_FOUND = 404;
     private static final Integer RESPONSE_UNAUTHORIZED = 401;
+    private static final Integer RESPONSE_EXPIRED = 403;
     private static final String[] badSuffix = {"13", "49", "53"};
+    private static final String SCK_ALLOW_CREATE = "SCK_ALLOW_CREATE";
 
     @Override
     public CDCResponse create(Member member) {
@@ -49,6 +56,12 @@ public class MemberServiceImpl implements MemberService {
             if (memberDB != null) {
                 response.setCode(RESPONSE_EXIST);
                 response.setData(memberDB);
+                return response;
+            }
+
+            // Kiểm tra trạng thái cho phép tạo
+            if (!isAllowCreate()) {
+                response.setCode(RESPONSE_EXPIRED);
                 return response;
             }
 
@@ -298,6 +311,39 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
+    @Override
+    public CDCResponse toggleAllowCreate() {
+        CDCResponse response = new CDCResponse();
+        try {
+            SystemConfig systemConfig = systemConfigRepository.findFirstByKey(SCK_ALLOW_CREATE);
+            if (systemConfig != null) {
+                systemConfig.setData("Y".equals(systemConfig.getData()) ? "Y" : "N");
+                systemConfigRepository.save(systemConfig);
+            } else {
+                systemConfig = new SystemConfig();
+                systemConfig.setKey(SCK_ALLOW_CREATE);
+                systemConfig.setData("Y");
+                systemConfigRepository.save(systemConfig);
+            }
+            response.setCode(RESPONSE_SUCCESS);
+        } catch (Exception e) {
+            response.setCode(RESPONSE_ERROR);
+        }
+        return response;
+    }
+
+    @Override
+    public CDCResponse getAllowCreate() {
+        CDCResponse response = new CDCResponse();
+        try {
+            response.setCode(RESPONSE_SUCCESS);
+            response.setData(getAllowCreate());
+        } catch (Exception e) {
+            response.setCode(RESPONSE_ERROR);
+        }
+        return response;
+    }
+
     private void saveLog(String actor, String action, Object asIs, Object toBe) {
         RequestLog log = new RequestLog();
         log.setActor(actor);
@@ -315,5 +361,18 @@ public class MemberServiceImpl implements MemberService {
             return response;
         }
         return new CDCResponse();
+    }
+
+    private Boolean isAllowCreate() {
+        boolean isAllowCreate = false;
+        try {
+            SystemConfig systemConfig = systemConfigRepository.findFirstByKey(SCK_ALLOW_CREATE);
+            if (systemConfig != null && "Y".equals(systemConfig.getData())) {
+                isAllowCreate = true;
+            }
+        } catch (Exception e) {
+            return isAllowCreate;
+        }
+        return isAllowCreate;
     }
 }

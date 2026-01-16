@@ -11,5 +11,7 @@ public interface MemberService {
     CDCResponse delete(Integer id, String actor);
     CDCResponse getData(String keyWord, Integer page, Integer pageSize, String actor);
     CDCResponse exportExcel(String actor);
+    CDCResponse toggleAllowCreate();
+    CDCResponse getAllowCreate();
 }
 

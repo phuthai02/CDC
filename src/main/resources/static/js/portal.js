@@ -10,75 +10,15 @@ let searchTimeout = null;
 
 // ===== GET ACTOR FROM STORAGE =====
 function getActor() {
-    // Trong artifacts: dùng biến trong memory
-    // Khi deploy: uncomment dòng dưới để dùng localStorage
     return localStorage.getItem('actor');
-    // return window.actorInMemory || null;
 }
 
 function setActor(name) {
-    // Trong artifacts: dùng biến trong memory
-    // Khi deploy: uncomment dòng dưới để dùng localStorage
     localStorage.setItem('actor', name);
-    // window.actorInMemory = name;
 }
 
 function clearActor() {
-    // Trong artifacts: dùng biến trong memory
-    // Khi deploy: uncomment dòng dưới để dùng localStorage
     localStorage.removeItem('actor');
-    // window.actorInMemory = null;
-}
-
-// ===== VALIDATION =====
-function validateFullname(name) {
-    if (!name || name.trim() === '') {
-        return { valid: false, message: 'Họ và tên không được để trống' };
-    }
-    if (name.trim().length < 2) {
-        return { valid: false, message: 'Họ và tên phải có ít nhất 2 ký tự' };
-    }
-    return { valid: true };
-}
-
-function validateBirthdate(dob) {
-    if (!dob || dob.trim() === '') {
-        return { valid: false, message: 'Ngày sinh không được để trống' };
-    }
-
-    const dobPattern = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
-    const match = dob.match(dobPattern);
-
-    if (!match) {
-        return { valid: false, message: 'Định dạng ngày sinh phải là dd/mm/yyyy' };
-    }
-
-    let day = parseInt(match[1], 10);
-    let month = parseInt(match[2], 10);
-    let year = parseInt(match[3], 10);
-
-    if (month < 1 || month > 12) {
-        return { valid: false, message: 'Tháng không hợp lệ (1-12)' };
-    }
-
-    const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    if ((year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0)) {
-        daysInMonth[1] = 29;
-    }
-
-    if (day < 1 || day > daysInMonth[month - 1]) {
-        return { valid: false, message: 'Ngày không hợp lệ' };
-    }
-
-    const birthDate = new Date(year, month - 1, day);
-    const today = new Date();
-
-    if (birthDate > today) {
-        return { valid: false, message: 'Ngày sinh không thể là tương lai' };
-    }
-
-    const formatted = `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
-    return { valid: true, formatted };
 }
 
 // ===== UTILITY FUNCTIONS =====
@@ -590,7 +530,7 @@ document.getElementById('page-size-select').addEventListener('change', function(
 
 // ===== EXPORT EXCEL =====
 document.getElementById('export-excel-btn').addEventListener('click', function() {
-    showToast('Đang tải file Excel...', 'info');
+    showToast('Đang tạo file Excel...', 'info');
 
     fetch('/export-excel', {
         headers: {
@@ -624,16 +564,16 @@ document.getElementById('export-excel-btn').addEventListener('click', function()
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(url);
 
-                showToast('Xuất file Excel thành công', 'success');
+                showToast('Tạo file Excel thành công', 'success');
             } else if (data.code === 401) {
                 handleUnauthorized();
             } else {
-                showToast('Không thể xuất file Excel', 'error');
+                showToast('Không thể tạo file Excel', 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showToast('Lỗi khi xuất file Excel', 'error');
+            showToast('Lỗi khi tạo file Excel', 'error');
         });
 });
 

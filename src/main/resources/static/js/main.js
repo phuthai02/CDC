@@ -221,8 +221,12 @@ registrationForm.addEventListener('submit', function(e) {
                 return response.json().then(data => {
                     if (data && (data.code === 200 || data.code === 409)) {
                         showSuccessResult(data.data.id, data.data.deviceId);
-                    } else {
-                        showErrorResult();
+                    }
+                    else if (data && data.code === 403) {
+                        showErrorResult("HẾT GIỜ ĐĂNG KÝ");
+                    }
+                    else {
+                        showErrorResult("LỖI HỆ THỐNG");
                     }
                 });
             })
@@ -234,11 +238,11 @@ registrationForm.addEventListener('submit', function(e) {
     }
 });
 
-function showErrorResult() {
+function showErrorResult(msg) {
     const resultContent = document.getElementById('result-content');
 
     resultContent.innerHTML = `
-        <h2>HỆ THỐNG XẢY RA LỖI</h2>
+        <h2>${msg}</h2>
     `;
 
     formScreen.style.animation = 'fadeOut 0.5s ease-out forwards';
