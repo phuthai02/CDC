@@ -12,6 +12,5 @@ public interface MemberService {
     CDCResponse getData(String keyWord, Integer page, Integer pageSize, String actor);
     CDCResponse exportExcel(String actor);
     CDCResponse toggleAllowCreate();
-    CDCResponse getAllowCreate();
 }
 

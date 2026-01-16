@@ -212,6 +212,9 @@ public class MemberServiceImpl implements MemberService {
             data.put("items", resultPage.getContent());
             data.put("totalElements", resultPage.getTotalElements());
             data.put("totalPages", resultPage.getTotalPages());
+            data.put("idMax", memberRepository.getMaxId());
+            data.put("allowCreate", isAllowCreate());
+
             response.setCode(RESPONSE_SUCCESS);
             response.setData(data);
         } catch (Exception e) {
@@ -339,18 +342,9 @@ public class MemberServiceImpl implements MemberService {
                 systemConfigRepository.save(systemConfig);
             }
             response.setCode(RESPONSE_SUCCESS);
-        } catch (Exception e) {
-            response.setCode(RESPONSE_ERROR);
-        }
-        return response;
-    }
 
-    @Override
-    public CDCResponse getAllowCreate() {
-        CDCResponse response = new CDCResponse();
-        try {
-            response.setCode(RESPONSE_SUCCESS);
-            response.setData(isAllowCreate());
+            //Push event
+            messagingTemplate.convertAndSend("/topic/event", "TOGGLE_ALLOW_CREATE");
         } catch (Exception e) {
             response.setCode(RESPONSE_ERROR);
         }

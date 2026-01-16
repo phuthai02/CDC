@@ -3,6 +3,8 @@ let currentPage = 0;
 let pageSize = 10;
 let totalElements = 0;
 let totalPages = 0;
+let idMax = 0;
+let allowCreate = false;
 let currentData = [];
 let searchKeyword = '';
 let editingRowId = null;
@@ -12,7 +14,12 @@ const stompClient = Stomp.over(socket);
 
 // ===== GET ACTOR FROM STORAGE =====
 function getActor() {
-    return localStorage.getItem('actor');
+    let actor = localStorage.getItem('actor');
+    if (!actor) {
+        showLoginModal();
+        return;
+    }
+    return actor;
 }
 
 function setActor(name) {
@@ -143,7 +150,7 @@ function login() {
                 showToast('Đăng nhập thành công', 'success');
                 loadData();
             } else if (data.code === 404) {
-                showToast('Tên hoặc ngày sinh không đúng', 'error');
+                showToast('Thông tin đăng nhập không chính xác', 'error');
             } else {
                 showToast('Đăng nhập thất bại', 'error');
             }
@@ -162,26 +169,7 @@ function handleUnauthorized() {
 // ===== STATS UPDATE =====
 function updateStats() {
     document.getElementById('total-count').textContent = totalElements;
-
-    // Lấy max number từ tất cả dữ liệu, không chỉ trang hiện tại
-    if (totalElements > 0) {
-        fetch(`/get-data?keyWord=${encodeURIComponent(searchKeyword)}&page=0&pageSize=1`, {
-            headers: {
-                'actor': encodeURIComponent(getActor())
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.code === 200 && data.data.items.length > 0) {
-                    const maxId = data.data.items[0].id;
-                    document.getElementById('max-number').textContent = formatLuckyNumber(maxId);
-                } else if (data.code === 401) {
-                    handleUnauthorized();
-                }
-            });
-    } else {
-        document.getElementById('max-number').textContent = '000';
-    }
+    document.getElementById('max-number').textContent = formatLuckyNumber(idMax);
 }
 
 // ===== EDIT FUNCTIONS =====
@@ -302,7 +290,6 @@ function saveEdit(id) {
                     if (data.code === 200) {
                         showToast('Chỉnh sửa thành công', 'success');
                         editingRowId = null;
-                        loadData();
                     } else if (data.code === 404) {
                         showToast('Không tìm thấy người này', 'error');
                     } else if (data.code === 409) {
@@ -347,7 +334,6 @@ function deleteEmployee(id) {
                             currentPage--;
                         }
 
-                        loadData();
                     } else if (data.code === 404) {
                         showToast('Không tìm thấy người này', 'error');
                     } else if (data.code === 401) {
@@ -491,6 +477,8 @@ function loadData() {
             currentData = data.data.items || [];
             totalElements = data.data.totalElements || 0;
             totalPages = data.data.totalPages || 0;
+            idMax = data.data.idMax || 0;
+            allowCreate = data.data.allowCreate || false;
             renderTable(currentData);
             renderPagination();
             updateStats();
@@ -530,8 +518,12 @@ document.getElementById('page-size-select').addEventListener('change', function(
     changePageSize(parseInt(e.target.value));
 });
 
+// ===== ALLOW CREATE =====
+
+
+
 // ===== EXPORT EXCEL =====
-document.getElementById('export-excel-btn').addEventListener('click', function() {
+document.getElementById('excel-btn').addEventListener('click', function () {
     showToast('Đang tạo file Excel...', 'info');
 
     fetch('/export-excel', {
@@ -592,18 +584,14 @@ document.getElementById('login-dob').addEventListener('keypress', (e) => {
 
 // ===== INITIALIZATION =====
 // Kiểm tra login
-if (!getActor()) {
-    showLoginModal();
-} else {
+if (getActor()) {
     loadData();
 }
 
 stompClient.connect({}, function () {
     stompClient.subscribe('/topic/event', function (message) {
         console.log(message);
-        if (!getActor()) {
-            showLoginModal();
-        } else {
+        if (getActor()) {
             loadData();
         }
     });

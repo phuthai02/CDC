@@ -75,11 +75,4 @@ public class MemberRestController {
         log.info("[CDC] toggleAllowCreate: actor={}", actor);
         return memberService.toggleAllowCreate();
     }
-
-    @GetMapping("get-allow-create")
-    public CDCResponse getAllowCreate(@RequestHeader(value = "actor", required = false) String actor) {
-        actor = actor != null ? java.net.URLDecoder.decode(actor, StandardCharsets.UTF_8) : null;
-        log.info("[CDC] getAllowCreate: actor={}", actor);
-        return memberService.exportExcel(actor);
-    }
 }
