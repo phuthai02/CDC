@@ -125,7 +125,7 @@ button {
     text-align: center;
     border: 5px solid #DC143C;
     position: relative;
-    animation: fadeIn 1s ease-in;
+    animation: cardOpen3D 1s ease-in;
 }
 
 @keyframes fadeIn {
@@ -136,6 +136,21 @@ button {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes cardOpen3D {
+    from {
+        opacity: 0;
+        transform:
+                rotateY(-180deg)
+                scale(0.6);
+    }
+    to {
+        opacity: 1;
+        transform:
+                rotateY(0)
+                scale(1);
     }
 }
 

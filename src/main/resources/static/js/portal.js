@@ -7,6 +7,8 @@ let currentData = [];
 let searchKeyword = '';
 let editingRowId = null;
 let searchTimeout = null;
+const socket = new SockJS('/ws');
+const stompClient = Stomp.over(socket);
 
 // ===== GET ACTOR FROM STORAGE =====
 function getActor() {
@@ -596,9 +598,13 @@ if (!getActor()) {
     loadData();
 }
 
-// Auto refresh mỗi 5 giây - chỉ khi không edit và đã login
-setInterval(() => {
-    if (editingRowId === null && getActor()) {
-        loadData();
-    }
-}, 5000);
+stompClient.connect({}, function () {
+    stompClient.subscribe('/topic/event', function (message) {
+        console.log(message);
+        if (!getActor()) {
+            showLoginModal();
+        } else {
+            loadData();
+        }
+    });
+});

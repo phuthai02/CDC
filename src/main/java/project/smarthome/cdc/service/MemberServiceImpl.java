@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import project.smarthome.cdc.model.dto.CDCResponse;
@@ -37,6 +38,9 @@ public class MemberServiceImpl implements MemberService {
 
     @Autowired
     private SystemConfigRepository systemConfigRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     private static final Integer RESPONSE_SUCCESS = 200;
     private static final Integer RESPONSE_ERROR = 500;
@@ -88,6 +92,9 @@ public class MemberServiceImpl implements MemberService {
             //Set data trả về
             response.setCode(RESPONSE_SUCCESS);
             response.setData(memberDB);
+
+            //Push event
+            messagingTemplate.convertAndSend("/topic/event", "CREATE");
         } catch (Exception e) {
             response.setCode(RESPONSE_ERROR);
         }
@@ -151,6 +158,9 @@ public class MemberServiceImpl implements MemberService {
 
             response.setCode(RESPONSE_SUCCESS);
             response.setData(oldData);
+
+            //Push event
+            messagingTemplate.convertAndSend("/topic/event", "UPDATE");
         } catch (Exception e) {
             response.setCode(RESPONSE_ERROR);
         }
@@ -175,6 +185,9 @@ public class MemberServiceImpl implements MemberService {
 
             response.setCode(RESPONSE_SUCCESS);
             response.setData(memberDB);
+
+            //Push event
+            messagingTemplate.convertAndSend("/topic/event", "DETETE");
         } catch (Exception e) {
             response.setCode(RESPONSE_ERROR);
         }
@@ -337,7 +350,7 @@ public class MemberServiceImpl implements MemberService {
         CDCResponse response = new CDCResponse();
         try {
             response.setCode(RESPONSE_SUCCESS);
-            response.setData(getAllowCreate());
+            response.setData(isAllowCreate());
         } catch (Exception e) {
             response.setCode(RESPONSE_ERROR);
         }
