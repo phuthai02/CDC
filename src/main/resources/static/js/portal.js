@@ -12,22 +12,47 @@ let searchTimeout = null;
 const socket = new SockJS('/ws');
 const stompClient = Stomp.over(socket);
 
-// ===== GET ACTOR FROM STORAGE =====
-function getActor() {
-    let actor = localStorage.getItem('actor');
-    if (!actor) {
+// ===== DEVICE ID MANAGEMENT =====
+async function getDeviceId() {
+    let deviceId = localStorage.getItem('actor');
+    if (!deviceId) {
         showLoginModal();
-        return;
+        return null;
     }
-    return actor;
+
+    // Validate device ID với server
+    try {
+        const response = await fetch(`/find-by-device?deviceId=${encodeURIComponent(deviceId)}`);
+        const data = await response.json();
+
+        if (data.code !== 200) {
+            clearDeviceId();
+            showLoginModal();
+            return null;
+        }
+
+        return deviceId;
+    } catch (error) {
+        console.error('Error validating device:', error);
+        clearDeviceId();
+        showLoginModal();
+        return null;
+    }
 }
 
-function setActor(name) {
-    localStorage.setItem('actor', name);
+function setDeviceId(deviceId) {
+    localStorage.setItem('actor', deviceId);
 }
 
-function clearActor() {
+function clearDeviceId() {
     localStorage.removeItem('actor');
+}
+
+// ===== UNAUTHORIZED HANDLER =====
+function handleUnauthorized() {
+    clearDeviceId();
+    showToast('Phiên đăng nhập hết hạn', 'error');
+    showLoginModal();
 }
 
 // ===== UTILITY FUNCTIONS =====
@@ -129,6 +154,9 @@ function login() {
         dobInput.classList.add('error');
         dobError.textContent = dobValidation.message;
         hasError = true;
+    } else {
+        // Format lại ngày sinh trong input
+        dobInput.value = dobValidation.formatted;
     }
 
     if (hasError) return;
@@ -145,7 +173,7 @@ function login() {
         .then(response => response.json())
         .then(data => {
             if (data.code === 200) {
-                setActor(data.data.name);
+                setDeviceId(data.data);
                 hideLoginModal();
                 showToast('Đăng nhập thành công', 'success');
                 loadData();
@@ -159,11 +187,6 @@ function login() {
             console.error('Error:', error);
             showToast('Lỗi kết nối đến server', 'error');
         });
-}
-
-function handleUnauthorized() {
-    clearActor();
-    showLoginModal();
 }
 
 // ===== STATS UPDATE =====
@@ -251,7 +274,7 @@ function cancelEdit() {
     renderTable(currentData);
 }
 
-function saveEdit(id) {
+async function saveEdit(id) {
     const nameInput = document.getElementById(`edit-name-${id}`);
     const dobInput = document.getElementById(`edit-dob-${id}`);
 
@@ -269,7 +292,10 @@ function saveEdit(id) {
     showModal(
         'Xác nhận chỉnh sửa',
         `Bạn có chắc chắn muốn chỉnh sửa thông tin cho "${name}"?`,
-        () => {
+        async () => {
+            const deviceId = await getDeviceId();
+            if (!deviceId) return;
+
             const employee = currentData.find(e => e.id === id);
             const updatedMember = {
                 ...employee,
@@ -281,7 +307,7 @@ function saveEdit(id) {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'actor': encodeURIComponent(getActor())
+                    'actor': deviceId
                 },
                 body: JSON.stringify(updatedMember)
             })
@@ -317,11 +343,14 @@ function deleteEmployee(id) {
     showModal(
         'Xác nhận xóa bỏ',
         `Bạn có chắc chắn muốn xóa "${employee.name}" (Số may mắn: ${formatLuckyNumber(id)})?`,
-        () => {
+        async () => {
+            const deviceId = await getDeviceId();
+            if (!deviceId) return;
+
             fetch(`/${id}`, {
                 method: 'DELETE',
                 headers: {
-                    'actor': encodeURIComponent(getActor())
+                    'actor': deviceId
                 }
             })
                 .then(response => response.json())
@@ -329,11 +358,9 @@ function deleteEmployee(id) {
                     if (data.code === 200) {
                         showToast('Xóa bỏ thành công', 'success');
 
-                        // Nếu xóa hết items trong trang và không phải trang đầu
                         if (currentData.length === 1 && currentPage > 0) {
                             currentPage--;
                         }
-
                     } else if (data.code === 404) {
                         showToast('Không tìm thấy người này', 'error');
                     } else if (data.code === 401) {
@@ -386,32 +413,26 @@ function renderPagination() {
     const buttonsContainer = document.getElementById('pagination-buttons');
     const infoContainer = document.getElementById('pagination-info');
 
-    // Update info
     const start = totalElements === 0 ? 0 : currentPage * pageSize + 1;
     const end = Math.min((currentPage + 1) * pageSize, totalElements);
     infoContainer.textContent = `Hiển thị ${start} - ${end} của ${totalElements} kết quả`;
 
-    // Build pagination buttons
     let buttons = [];
 
-    // Previous button
     buttons.push(`
         <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 0 ? 'disabled' : ''}>
             ‹
         </button>
     `);
 
-    // Page buttons logic
     const maxButtons = 5;
     let startPage = Math.max(0, currentPage - Math.floor(maxButtons / 2));
     let endPage = Math.min(totalPages - 1, startPage + maxButtons - 1);
 
-    // Adjust if at the end
     if (endPage - startPage < maxButtons - 1) {
         startPage = Math.max(0, endPage - maxButtons + 1);
     }
 
-    // First page
     if (startPage > 0) {
         buttons.push(`<button class="page-btn" onclick="changePage(0)">1</button>`);
         if (startPage > 1) {
@@ -419,7 +440,6 @@ function renderPagination() {
         }
     }
 
-    // Page numbers
     for (let i = startPage; i <= endPage; i++) {
         buttons.push(`
             <button class="page-btn ${i === currentPage ? 'active' : ''}" 
@@ -430,7 +450,6 @@ function renderPagination() {
         `);
     }
 
-    // Last page
     if (endPage < totalPages - 1) {
         if (endPage < totalPages - 2) {
             buttons.push(`<button class="page-btn ellipsis">...</button>`);
@@ -438,7 +457,6 @@ function renderPagination() {
         buttons.push(`<button class="page-btn" onclick="changePage(${totalPages - 1})">${totalPages}</button>`);
     }
 
-    // Next button
     buttons.push(`
         <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>
             ›
@@ -463,35 +481,39 @@ function changePageSize(newSize) {
 }
 
 // ===== DATA LOADING =====
-function loadData() {
+async function loadData() {
+    const deviceId = await getDeviceId();
+    if (!deviceId) return;
+
     const tableBody = document.getElementById('table-body');
 
     fetch(`/get-data?keyWord=${encodeURIComponent(searchKeyword)}&page=${currentPage}&pageSize=${pageSize}`, {
         headers: {
-            'actor': encodeURIComponent(getActor())
+            'actor': deviceId
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.code === 200) {
-            currentData = data.data.items || [];
-            totalElements = data.data.totalElements || 0;
-            totalPages = data.data.totalPages || 0;
-            idMax = data.data.idMax || 0;
-            allowCreate = data.data.allowCreate || false;
-            renderTable(currentData);
-            renderPagination();
-            updateStats();
-        } else if (data.code === 401) {
-            handleUnauthorized();
-        } else {
-            tableBody.innerHTML = '<tr><td colspan="6" class="error" style="text-align: center; padding: 50px; color: #f44336;"><strong>KHÔNG THỂ TẢI DỮ LIỆU</strong></td></tr>';
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        tableBody.innerHTML = '<tr><td colspan="6" class="error" style="text-align: center; padding: 50px; color: #f44336;"><strong>LỖI KẾT NỐI MÁY CHỦ</strong></td></tr>';
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data.code === 200) {
+                currentData = data.data.items || [];
+                totalElements = data.data.totalElements || 0;
+                totalPages = data.data.totalPages || 0;
+                idMax = data.data.idMax || 0;
+                allowCreate = data.data.allowCreate || false;
+                renderTable(currentData);
+                renderPagination();
+                updateStats();
+                updateAllowCreateButton();
+            } else if (data.code === 401) {
+                handleUnauthorized();
+            } else {
+                tableBody.innerHTML = '<tr><td colspan="6" class="error" style="text-align: center; padding: 50px; color: #f44336;"><strong>KHÔNG THỂ TẢI DỮ LIỆU</strong></td></tr>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            tableBody.innerHTML = '<tr><td colspan="6" class="error" style="text-align: center; padding: 50px; color: #f44336;"><strong>LỖI KẾT NỐI MÁY CHỦ</strong></td></tr>';
+        });
 }
 
 // ===== SEARCH =====
@@ -500,15 +522,13 @@ document.getElementById('search-input').addEventListener('input', function(e) {
 
     const newKeyword = e.target.value.trim();
 
-    // Clear timeout cũ
     if (searchTimeout) {
         clearTimeout(searchTimeout);
     }
 
-    // Debounce: chờ 500ms sau khi người dùng ngừng gõ
     searchTimeout = setTimeout(() => {
         searchKeyword = newKeyword;
-        currentPage = 0; // Reset về trang đầu khi search
+        currentPage = 0;
         loadData();
     }, 500);
 });
@@ -519,22 +539,76 @@ document.getElementById('page-size-select').addEventListener('change', function(
 });
 
 // ===== ALLOW CREATE =====
+function updateAllowCreateButton() {
+    const btn = document.getElementById('allow-cre-btn');
+    if (allowCreate) {
+        btn.textContent = 'Cho phép đăng ký';
+        btn.classList.remove('disabled');
+        btn.classList.add('enabled');
+    } else {
+        btn.textContent = 'Từ chối đăng ký';
+        btn.classList.remove('enabled');
+        btn.classList.add('disabled');
+    }
+}
 
+function toggleAllowCreate() {
+    const currentStatus = allowCreate ? 'cho phép' : 'từ chối';
+    const newStatus = allowCreate ? 'từ chối' : 'cho phép';
 
+    showModal(
+        'Xác nhận thay đổi',
+        `Hiện tại đang ${currentStatus} đăng ký. Bạn có chắc chắn muốn chuyển sang ${newStatus} đăng ký?`,
+        async () => {
+            const deviceId = await getDeviceId();
+            if (!deviceId) return;
+
+            fetch('/toggle-allow-create', {
+                method: 'POST',
+                headers: {
+                    'actor': deviceId
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        showToast(
+                            !allowCreate ? 'Đã cho phép đăng ký' : 'Đã từ chối đăng ký',
+                            'success'
+                        );
+                    } else if (data.code === 401) {
+                        handleUnauthorized();
+                    } else if (data.code === 500) {
+                        showToast('Lỗi hệ thống', 'error');
+                    } else {
+                        showToast(data.message || 'Lỗi không xác định', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Lỗi kết nối đến server', 'error');
+                });
+        }
+    );
+}
+
+document.getElementById('allow-cre-btn').addEventListener('click', toggleAllowCreate);
 
 // ===== EXPORT EXCEL =====
-document.getElementById('excel-btn').addEventListener('click', function () {
+document.getElementById('excel-btn').addEventListener('click', async function () {
+    const deviceId = await getDeviceId();
+    if (!deviceId) return;
+
     showToast('Đang tạo file Excel...', 'info');
 
     fetch('/export-excel', {
         headers: {
-            'actor': encodeURIComponent(getActor())
+            'actor': deviceId
         }
     })
         .then(response => response.json())
         .then(data => {
             if (data.code === 200) {
-                // Convert base64 string to byte array
                 const base64String = data.data;
                 const byteCharacters = atob(base64String);
                 const byteNumbers = new Array(byteCharacters.length);
@@ -548,7 +622,6 @@ document.getElementById('excel-btn').addEventListener('click', function () {
                     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 });
 
-                // Create download link
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
@@ -574,25 +647,57 @@ document.getElementById('excel-btn').addEventListener('click', function () {
 // ===== LOGIN EVENT LISTENERS =====
 document.getElementById('login-btn').addEventListener('click', login);
 
-// Enter để login
 document.getElementById('login-name').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') login();
 });
+
+document.getElementById('login-name').addEventListener('blur', function() {
+    const nameInput = document.getElementById('login-name');
+    const nameError = document.getElementById('login-name-error');
+
+    if (!nameInput.value.trim()) return;
+
+    const validation = validateFullname(nameInput.value);
+    if (!validation.valid) {
+        nameInput.classList.add('error');
+        nameError.textContent = validation.message;
+    } else {
+        nameInput.classList.remove('error');
+        nameError.textContent = '';
+    }
+});
+
 document.getElementById('login-dob').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') login();
 });
 
-// ===== INITIALIZATION =====
-// Kiểm tra login
-if (getActor()) {
-    loadData();
-}
+document.getElementById('login-dob').addEventListener('blur', function() {
+    const dobInput = document.getElementById('login-dob');
+    const dobError = document.getElementById('login-dob-error');
 
+    if (!dobInput.value.trim()) return;
+
+    const validation = validateBirthdate(dobInput.value);
+    if (!validation.valid) {
+        dobInput.classList.add('error');
+        dobError.textContent = validation.message;
+    } else {
+        dobInput.classList.remove('error');
+        dobError.textContent = '';
+        dobInput.value = validation.formatted;
+    }
+});
+
+// ===== WEBSOCKET SUBSCRIPTION =====
 stompClient.connect({}, function () {
-    stompClient.subscribe('/topic/event', function (message) {
-        console.log(message);
-        if (getActor()) {
-            loadData();
-        }
+    stompClient.subscribe('/topic/event', async function (message) {
+        loadData();
     });
 });
+
+// ===== INITIALIZATION =====
+(async function init() {
+    const deviceId = await getDeviceId();
+    if (!deviceId) return;
+    loadData();
+})();

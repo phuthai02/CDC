@@ -143,7 +143,7 @@ button {
     from {
         opacity: 0;
         transform:
-                rotateY(-180deg)
+                rotateY(-135deg)
                 scale(0.6);
     }
     to {

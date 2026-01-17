@@ -128,7 +128,7 @@ public class MemberServiceImpl implements MemberService {
                 return response;
             }
             response.setCode(RESPONSE_SUCCESS);
-            response.setData(memberDB);
+            response.setData(memberDB.getDeviceId());
         } catch (Exception e) {
             response.setCode(RESPONSE_ERROR);
         }
@@ -333,7 +333,7 @@ public class MemberServiceImpl implements MemberService {
         try {
             SystemConfig systemConfig = systemConfigRepository.findFirstByKey(SCK_ALLOW_CREATE);
             if (systemConfig != null) {
-                systemConfig.setData("Y".equals(systemConfig.getData()) ? "Y" : "N");
+                systemConfig.setData("Y".equals(systemConfig.getData()) ? "N" : "Y");
                 systemConfigRepository.save(systemConfig);
             } else {
                 systemConfig = new SystemConfig();
@@ -342,7 +342,7 @@ public class MemberServiceImpl implements MemberService {
                 systemConfigRepository.save(systemConfig);
             }
             response.setCode(RESPONSE_SUCCESS);
-
+            response.setData(isAllowCreate());
             //Push event
             messagingTemplate.convertAndSend("/topic/event", "TOGGLE_ALLOW_CREATE");
         } catch (Exception e) {

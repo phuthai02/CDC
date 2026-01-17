@@ -122,19 +122,33 @@ button {
     padding: 12px 30px;
     font-size: 1em;
     font-weight: 600;
-    background: linear-gradient(135deg, #1D6F42, #217346);
     color: white;
     border: none;
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
+}
+
+.allow-cre-btn.enabled {
+    background: linear-gradient(135deg, #1D6F42, #217346);
     box-shadow: 0 3px 15px rgba(33, 115, 70, 0.3);
 }
 
-.allow-cre-btn:hover {
+.allow-cre-btn.enabled:hover {
     background: linear-gradient(135deg, #217346, #28844C);
     transform: translateY(-2px);
     box-shadow: 0 5px 20px rgba(33, 115, 70, 0.5);
+}
+
+.allow-cre-btn.disabled {
+    background: linear-gradient(135deg, #c62828, #d32f2f);
+    box-shadow: 0 3px 15px rgba(211, 47, 47, 0.3);
+}
+
+.allow-cre-btn.disabled:hover {
+    background: linear-gradient(135deg, #d32f2f, #e53935);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(211, 47, 47, 0.5);
 }
 
 .allow-cre-btn:active {

@@ -12,7 +12,7 @@ public class SystemConfig {
     @Column(name = "ID")
     private Integer id;
 
-    @Column(name = "KEY", nullable = false, length = 16)
+    @Column(name = "`KEY`", nullable = false, length = 16)
     private String key;
 
     @Column(name = "DATA", nullable = false, length = 124)
