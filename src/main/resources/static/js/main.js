@@ -15,7 +15,9 @@ const defaultFrame = 'images/frame.png';
 const holdFrame = 'images/frame_3.png';
 let holdTimer = null;
 
-function startHold() {
+function startHold(e) {
+    e.preventDefault();
+    e.stopPropagation();
     resultImage.src = holdFrame;
     holdTimer = setTimeout(() => {
         downloadImage(localStorage.getItem("deviceId"));
@@ -30,21 +32,27 @@ function cancelHold() {
     }
 }
 
-// Chuột (PC)
+// Touch
+resultContainer.addEventListener('touchstart', startHold, { passive: false });
+resultContainer.addEventListener('touchend', cancelHold);
+resultContainer.addEventListener('touchmove', cancelHold);
+resultContainer.addEventListener('touchcancel', cancelHold);
+
+// Mouse (PC)
 resultContainer.addEventListener('mousedown', startHold);
 resultContainer.addEventListener('mouseup', cancelHold);
 resultContainer.addEventListener('mouseleave', cancelHold);
 
-// Touch (Mobile)
-resultContainer.addEventListener('touchstart', startHold);
-resultContainer.addEventListener('touchend', cancelHold);
-resultContainer.addEventListener('touchcancel', cancelHold);
-
-
-
 document.addEventListener('DOMContentLoaded', function () {
     startPetalRain();
     checkExistingDevice();
+});
+
+document.addEventListener('contextmenu', function (e) {
+    if (e.target.closest('.result-container')) {
+        e.preventDefault();
+        return false;
+    }
 });
 
 function checkExistingDevice() {

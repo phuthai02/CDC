@@ -396,8 +396,6 @@ button {
 
 /* Result Screen Styles */
 #result-screen {
-    user-select: none;
-    cursor: pointer;
     position: fixed;
     top: 0;
     left: 0;
@@ -410,6 +408,18 @@ button {
     overflow-y: auto;
     opacity: 0;
     animation: fadeIn 0.8s ease-in forwards;
+}
+
+.result-container,
+.result-container * {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    pointer-events: none;
+}
+
+.result-container {
+    pointer-events: auto;
 }
 
 .result-container {
