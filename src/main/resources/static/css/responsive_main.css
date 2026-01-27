@@ -31,6 +31,10 @@
         font-size: 1.9em;
     }
 
+    .hint-text {
+        font-size: 0.95em;
+    }
+
     .horse-left, .horse-right {
         width: 200px;
         margin-bottom: 60px;
@@ -87,6 +91,10 @@
         margin-bottom: 18px;
     }
 
+    .hint-text {
+        font-size: 0.9em;
+    }
+
     .form-group {
         margin-bottom: 23px;
     }
@@ -117,6 +125,11 @@
 
 /* Tablet & Mobile - 768px and below */
 @media (max-width: 768px) {
+    .download-image-btn {
+        font-size: 1em;
+        padding: 7px 14px;
+        margin-top: 15px;
+    }
 
     .header-left, .header-right {
         height: 11vh;
@@ -201,6 +214,10 @@
         font-size: 1.7em;
     }
 
+    .hint-text {
+        font-size: 0.85em;
+    }
+
     .lucky-number {
         font-size: 3.5em;
     }
@@ -208,6 +225,12 @@
 
 /* Small Mobile - 480px and below */
 @media (max-width: 480px) {
+
+    .download-image-btn {
+        font-size: 0.9em;
+        padding: 6px 12px;
+        margin-top: 12px;
+    }
 
     .header-left, .header-right {
         height: 9vh;
@@ -287,6 +310,10 @@
         font-size: 1.5em;
     }
 
+    .hint-text {
+        font-size: 0.75em;
+    }
+
     .lucky-number {
         font-size: 3em;
     }
@@ -294,6 +321,12 @@
 
 /* Extra Small Mobile - 375px and below */
 @media (max-width: 375px) {
+
+    .download-image-btn {
+        font-size: 0.85em;
+        padding: 5px 10px;
+        margin-top: 10px;
+    }
 
     .header-left, .header-right {
         height: 9vh;
@@ -370,6 +403,10 @@
         font-size: 1.3em;
     }
 
+    .hint-text {
+        font-size: 0.65em;
+    }
+
     .lucky-number {
         font-size: 2.5em;
     }
@@ -377,6 +414,12 @@
 
 /* Very Small Mobile - 320px and below */
 @media (max-width: 320px) {
+    .download-image-btn {
+        font-size: 0.8em;
+        padding: 4px 8px;
+        letter-spacing: 0.3px;
+    }
+
     /* Decorative Elements */
     .horse-left, .horse-right {
         width: 80px;
@@ -455,6 +498,10 @@
 
     .result-container h2 {
         font-size: 1.2em;
+    }
+
+    .hint-text {
+        font-size: 0.6em;
     }
 
     .lucky-number {

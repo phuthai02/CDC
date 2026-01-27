@@ -1,5 +1,3 @@
-const music = document.getElementById('background-music');
-
 const welcomeScreen = document.getElementById('welcome-screen');
 const formScreen = document.getElementById('form-screen');
 const resultScreen = document.getElementById('result-screen');
@@ -10,7 +8,38 @@ const fullnameInput = document.getElementById('fullname');
 const birthdateInput = document.getElementById('birthdate');
 const petalsContainer = document.getElementById('petals-container');
 const submitBtn = document.getElementById('submit-btn');
-const downloadBtn = document.getElementById('download-btn');
+
+const resultContainer = document.querySelector('.result-container');
+const resultImage = document.querySelector('.result-image');
+const defaultFrame = 'images/frame.png';
+const holdFrame = 'images/frame_3.png';
+let holdTimer = null;
+
+function startHold() {
+    resultImage.src = holdFrame;
+    holdTimer = setTimeout(() => {
+        downloadImage(localStorage.getItem("deviceId"));
+    }, 1000);
+}
+
+function cancelHold() {
+    resultImage.src = defaultFrame;
+    if (holdTimer) {
+        clearTimeout(holdTimer);
+        holdTimer = null;
+    }
+}
+
+// Chuột (PC)
+resultContainer.addEventListener('mousedown', startHold);
+resultContainer.addEventListener('mouseup', cancelHold);
+resultContainer.addEventListener('mouseleave', cancelHold);
+
+// Touch (Mobile)
+resultContainer.addEventListener('touchstart', startHold);
+resultContainer.addEventListener('touchend', cancelHold);
+resultContainer.addEventListener('touchcancel', cancelHold);
+
 
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -29,7 +58,7 @@ function checkExistingDevice() {
                     localStorage.removeItem('deviceId');
                     welcomeScreen.classList.add('show');
                 } else if (data.code === 200 && data.data && data.data.id) {
-                    showSuccessResult(data.data.id);
+                    showSuccessResult(data.data.id, data.data.deviceId);
                 }
             })
             .catch(error => {
@@ -40,8 +69,6 @@ function checkExistingDevice() {
     } else {
         welcomeScreen.classList.add('show');
     }
-
-    // music.play();
 }
 
 // Tạo một cánh hoa rơi - Tối ưu cho Safari
@@ -263,6 +290,7 @@ function showSuccessResult(id, deviceId) {
     resultContent.innerHTML = `
         <h2>CON SỐ MAY MẮN</h2>
         <div class="lucky-number">${luckyNumber}</div>
+        <p class="hint-text">Nhấn giữ 3 giây để tải hình ảnh</p>
     `;
 
     formScreen.style.animation = 'fadeOut 0.5s ease-out forwards';
@@ -270,4 +298,31 @@ function showSuccessResult(id, deviceId) {
         formScreen.style.display = 'none';
         resultScreen.classList.add('show');
     }, 500);
+}
+
+function downloadImage(deviceId) {
+    fetch(`/download-image?deviceId=${encodeURIComponent(deviceId)}`)
+        .then(response => response.json())
+        .then(data => {
+
+            if (data.code === 200 && data.data) {
+                const a = document.createElement('a');
+                a.href = data.data;
+                a.download = data.data.split('/').pop(); // Lấy tên file
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                }, 100);
+
+            } else {
+                throw new Error('Không thể tải hình ảnh');
+            }
+        })
+        .catch(error => {
+            console.error('Error downloading image:', error);
+            alert('Không thể tải hình ảnh. Vui lòng thử lại!');
+        });
 }

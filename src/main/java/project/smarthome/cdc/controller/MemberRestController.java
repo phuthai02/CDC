@@ -29,6 +29,12 @@ public class MemberRestController {
         return memberService.findByDeviceId(deviceId);
     }
 
+    @GetMapping("download-image")
+    public CDCResponse downloadImage(@RequestParam("deviceId") String deviceId) {
+        log.info("[CDC] downloadImage: deviceId={}", deviceId);
+        return memberService.downloadImage(deviceId);
+    }
+
     @PostMapping("login")
     public CDCResponse login(@RequestBody Member member) {
         log.info("[CDC] login: member={}", JsonUtils.toJson(member));

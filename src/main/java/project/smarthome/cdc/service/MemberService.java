@@ -6,6 +6,7 @@ import project.smarthome.cdc.model.entity.Member;
 public interface MemberService {
     CDCResponse create(Member member);
     CDCResponse findByDeviceId(String deviceId);
+    CDCResponse downloadImage(String deviceId);
     CDCResponse login(Member member);
     CDCResponse update(Integer id, Member member, String actor);
     CDCResponse delete(Integer id, String actor);
