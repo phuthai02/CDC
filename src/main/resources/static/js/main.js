@@ -266,7 +266,7 @@ function showSuccessResult(id, deviceId) {
     resultContent.innerHTML = `
         <h2>CON SỐ MAY MẮN</h2>
         <div class="lucky-number">${luckyNumber}</div>
-        <p class="hint-text"><u>Tải hình ảnh</u></p>
+        <p class="hint-text"><u>Nhấn để tải hình ảnh</u></p>
     `;
 
     formScreen.style.animation = 'fadeOut 0.5s ease-out forwards';
@@ -277,10 +277,12 @@ function showSuccessResult(id, deviceId) {
         const hintText = document.querySelector('.hint-text');
         if (hintText) {
             hintText.addEventListener('click', downloadOnClick);
+            hintText.addEventListener('touchstart', downloadOnClick, { passive: false });
         }
     }, 500);
 }
 
+// Thay thế hàm downloadImage cũ
 async function downloadImage(deviceId) {
     try {
         const response = await fetch(`/download-image?deviceId=${encodeURIComponent(deviceId)}`);
@@ -291,38 +293,176 @@ async function downloadImage(deviceId) {
 
         const blob = await response.blob();
 
-        if (blob.size === 0) {
-            throw new Error('File rỗng');
+        // Detect thiết bị
+        const userAgent = navigator.userAgent;
+        const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+        const isAndroid = /Android/.test(userAgent);
+        const isMobile = isIOS || isAndroid;
+
+        if (isMobile) {
+            // Mobile: Hiển thị modal với hướng dẫn hoặc nút download
+            showMobileImageModal(blob, isIOS);
+        } else {
+            // Desktop: Download trực tiếp
+            downloadDirectly(blob, 'lucky_number.png');
+            showToast('Đã tải xuống thành công');
         }
-
-        // Extract filename
-        const contentDisposition = response.headers.get('Content-Disposition');
-        let fileName = 'lucky_number.png';
-
-        if (contentDisposition) {
-            const matches = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-            if (matches && matches[1]) {
-                fileName = matches[1].replace(/['"]/g, '');
-            }
-        }
-
-        // Download
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-
-        setTimeout(() => {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        }, 100);
-
-        console.log('[Download Image] Success:', fileName);
 
     } catch (error) {
         console.error('[Download Image] Error:', error);
         alert(`Không thể tải hình ảnh: ${error.message}`);
     }
+}
+
+// Hiển thị modal cho mobile (iOS + Android)
+function showMobileImageModal(blob, isIOS) {
+    // Xóa modal cũ nếu còn tồn tại
+    const existingModal = document.getElementById('image-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = function() {
+        const base64data = reader.result;
+
+        const modal = document.createElement('div');
+        modal.id = 'image-modal';
+        modal.className = 'image-modal';
+
+        // iOS: Hiển thị hướng dẫn, không có nút download
+        // Android: Hiển thị nút download, không có hướng dẫn
+        modal.innerHTML = `
+            <div class="modal-content">
+                <!-- Ảnh chính -->
+                <div class="image-wrapper">
+                    <img src="${base64data}" alt="Lucky Number" class="modal-image" id="modal-image">
+                </div>
+                
+                ${isIOS ? `
+                    <!-- Hướng dẫn cho iOS -->
+                    <div class="instruction-box">
+                        <div class="instruction-title">Cách lưu ảnh trên Iphone</div>
+                        <div class="instruction-steps">
+                            <div class="step">
+                                <span class="step-number">1</span>
+                                <span class="step-text">Nhấn <strong>giữ</strong> vào ảnh bên trên</span>
+                            </div>
+                            <div class="step">
+                                <span class="step-number">2</span>
+                                <span class="step-text">Chọn <strong>"Lưu vào Ảnh"</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                ` : `
+                    <!-- Nút tải xuống cho Android -->
+                    <button class="download-btn" id="download-btn">Tải xuống ảnh</button>
+                `}
+                
+                <!-- Nút đóng -->
+                <button class="close-modal-btn" id="close-modal-btn">Đóng</button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Animation vào
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 10);
+
+        // Xử lý nút download cho Android
+        if (!isIOS) {
+            const downloadBtn = document.getElementById('download-btn');
+            if (downloadBtn) {
+                downloadBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    downloadDirectly(blob, 'lucky_number.png');
+                };
+            }
+        }
+
+        // Xử lý nút đóng - Đơn giản hóa
+        const closeBtn = document.getElementById('close-modal-btn');
+        if (closeBtn) {
+            closeBtn.onclick = function(e) {
+                e.stopPropagation();
+                closeImageModal(modal);
+            };
+        }
+
+        // Đóng khi click vào background
+        modal.onclick = function(e) {
+            if (e.target === modal) {
+                closeImageModal(modal);
+            }
+        };
+
+        // Ngăn đóng modal khi click vào modal-content
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.onclick = function(e) {
+                e.stopPropagation();
+            };
+        }
+
+        // Đóng khi nhấn ESC
+        const handleEsc = function(e) {
+            if (e.key === 'Escape') {
+                closeImageModal(modal);
+                document.removeEventListener('keydown', handleEsc);
+            }
+        };
+        document.addEventListener('keydown', handleEsc);
+    };
+
+    reader.readAsDataURL(blob);
+}
+
+// Đóng modal với animation
+function closeImageModal(modal) {
+    modal.classList.remove('show');
+    setTimeout(() => {
+        if (modal.parentNode) {
+            // Xóa tất cả event listeners bằng cách remove modal hoàn toàn
+            document.body.removeChild(modal);
+        }
+    }, 300);
+}
+
+// Download trực tiếp (cho desktop)
+function downloadDirectly(blob, filename) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+
+    setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 100);
+}
+
+// Hiển thị toast notification
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            if (toast.parentNode) {
+                document.body.removeChild(toast);
+            }
+        }, 300);
+    }, 2500);
 }
