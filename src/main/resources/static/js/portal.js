@@ -595,54 +595,77 @@ function toggleAllowCreate() {
 document.getElementById('allow-cre-btn').addEventListener('click', toggleAllowCreate);
 
 // ===== EXPORT EXCEL =====
-document.getElementById('excel-btn').addEventListener('click', async function () {
+document.getElementById('excel-btn').addEventListener('click', async () => {
     const deviceId = await getDeviceId();
     if (!deviceId) return;
 
     showToast('Đang tạo file Excel...', 'info');
 
-    fetch('/export-excel', {
+    downloadExcel('/export-excel', {
         headers: {
-            'actor': deviceId
+            actor: encodeURIComponent(deviceId)
         }
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.code === 200) {
-                const base64String = data.data;
-                const byteCharacters = atob(base64String);
-                const byteNumbers = new Array(byteCharacters.length);
-
-                for (let i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-
-                const byteArray = new Uint8Array(byteNumbers);
-                const blob = new Blob([byteArray], {
-                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                });
-
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `Danh_Sach_Tham_Du_${new Date().getTime()}.xlsx`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-
-                showToast('Tạo file Excel thành công', 'success');
-            } else if (data.code === 401) {
-                handleUnauthorized();
-            } else {
-                showToast('Không thể tạo file Excel', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('Lỗi khi tạo file Excel', 'error');
-        });
+    });
 });
+
+async function downloadExcel(url, {
+    headers = {},
+    defaultFileName = `CDC_Members_${Date.now()}.xlsx`
+} = {}) {
+    try {
+        const response = await fetch(url, { headers });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                handleUnauthorized();
+                return;
+            }
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const blob = await response.blob();
+        if (!blob || blob.size === 0) {
+            throw new Error('File Excel rỗng');
+        }
+
+        // 👉 Parse filename từ Content-Disposition
+        let fileName = defaultFileName;
+        const cd = response.headers.get('Content-Disposition');
+
+        if (cd) {
+            const utf8 = cd.match(/filename\*=UTF-8''(.+)/i);
+            const ascii = cd.match(/filename="?([^"]+)"?/i);
+
+            if (utf8 && utf8[1]) {
+                try {
+                    fileName = decodeURIComponent(utf8[1]);
+                } catch {
+                    fileName = utf8[1];
+                }
+            } else if (ascii && ascii[1]) {
+                fileName = ascii[1];
+            }
+        }
+
+        // 👉 Download
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(blobUrl);
+        }, 100);
+
+        showToast('Tạo file Excel thành công', 'success');
+    } catch (err) {
+        console.error(err);
+        showToast(err.message || 'Lỗi khi tải file Excel', 'error');
+    }
+}
 
 // ===== LOGIN EVENT LISTENERS =====
 document.getElementById('login-btn').addEventListener('click', login);

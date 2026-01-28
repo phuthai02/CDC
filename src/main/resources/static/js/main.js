@@ -9,51 +9,19 @@ const birthdateInput = document.getElementById('birthdate');
 const petalsContainer = document.getElementById('petals-container');
 const submitBtn = document.getElementById('submit-btn');
 
-const resultContainer = document.querySelector('.result-container');
-const resultImage = document.querySelector('.result-image');
-const defaultFrame = 'images/frame.png';
-const holdFrame = 'images/frame_3.png';
-let holdTimer = null;
-
-function startHold(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    resultImage.src = holdFrame;
-    holdTimer = setTimeout(() => {
-        downloadImage(localStorage.getItem("deviceId"));
-    }, 1000);
-}
-
-function cancelHold() {
-    resultImage.src = defaultFrame;
-    if (holdTimer) {
-        clearTimeout(holdTimer);
-        holdTimer = null;
+// Hàm tải xuống hình ảnh khi click/tap
+function downloadOnClick() {
+    const deviceId = localStorage.getItem("deviceId");
+    if (deviceId) {
+        downloadImage(deviceId);
     }
 }
-
-// Touch
-resultContainer.addEventListener('touchstart', startHold, { passive: false });
-resultContainer.addEventListener('touchend', cancelHold);
-resultContainer.addEventListener('touchmove', cancelHold);
-resultContainer.addEventListener('touchcancel', cancelHold);
-
-// Mouse (PC)
-resultContainer.addEventListener('mousedown', startHold);
-resultContainer.addEventListener('mouseup', cancelHold);
-resultContainer.addEventListener('mouseleave', cancelHold);
 
 document.addEventListener('DOMContentLoaded', function () {
     startPetalRain();
     checkExistingDevice();
 });
 
-document.addEventListener('contextmenu', function (e) {
-    if (e.target.closest('.result-container')) {
-        e.preventDefault();
-        return false;
-    }
-});
 
 function checkExistingDevice() {
     const deviceId = localStorage.getItem('deviceId');
@@ -298,39 +266,63 @@ function showSuccessResult(id, deviceId) {
     resultContent.innerHTML = `
         <h2>CON SỐ MAY MẮN</h2>
         <div class="lucky-number">${luckyNumber}</div>
-        <p class="hint-text">Nhấn giữ 3 giây để tải hình ảnh</p>
+        <p class="hint-text"><u>Tải hình ảnh</u></p>
     `;
 
     formScreen.style.animation = 'fadeOut 0.5s ease-out forwards';
+
     setTimeout(() => {
         formScreen.style.display = 'none';
         resultScreen.classList.add('show');
+        const hintText = document.querySelector('.hint-text');
+        if (hintText) {
+            hintText.addEventListener('click', downloadOnClick);
+        }
     }, 500);
 }
 
-function downloadImage(deviceId) {
-    fetch(`/download-image?deviceId=${encodeURIComponent(deviceId)}`)
-        .then(response => response.json())
-        .then(data => {
+async function downloadImage(deviceId) {
+    try {
+        const response = await fetch(`/download-image?deviceId=${encodeURIComponent(deviceId)}`);
 
-            if (data.code === 200 && data.data) {
-                const a = document.createElement('a');
-                a.href = data.data;
-                a.download = data.data.split('/').pop(); // Lấy tên file
-                a.style.display = 'none';
-                document.body.appendChild(a);
-                a.click();
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
 
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                }, 100);
+        const blob = await response.blob();
 
-            } else {
-                throw new Error('Không thể tải hình ảnh');
+        if (blob.size === 0) {
+            throw new Error('File rỗng');
+        }
+
+        // Extract filename
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let fileName = 'lucky_number.png';
+
+        if (contentDisposition) {
+            const matches = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (matches && matches[1]) {
+                fileName = matches[1].replace(/['"]/g, '');
             }
-        })
-        .catch(error => {
-            console.error('Error downloading image:', error);
-            alert('Không thể tải hình ảnh. Vui lòng thử lại!');
-        });
+        }
+
+        // Download
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 100);
+
+        console.log('[Download Image] Success:', fileName);
+
+    } catch (error) {
+        console.error('[Download Image] Error:', error);
+        alert(`Không thể tải hình ảnh: ${error.message}`);
+    }
 }

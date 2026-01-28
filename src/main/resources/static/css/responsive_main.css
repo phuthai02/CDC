@@ -125,11 +125,6 @@
 
 /* Tablet & Mobile - 768px and below */
 @media (max-width: 768px) {
-    .download-image-btn {
-        font-size: 1em;
-        padding: 7px 14px;
-        margin-top: 15px;
-    }
 
     .header-left, .header-right {
         height: 11vh;
@@ -226,12 +221,6 @@
 /* Small Mobile - 480px and below */
 @media (max-width: 480px) {
 
-    .download-image-btn {
-        font-size: 0.9em;
-        padding: 6px 12px;
-        margin-top: 12px;
-    }
-
     .header-left, .header-right {
         height: 9vh;
     }
@@ -322,12 +311,6 @@
 /* Extra Small Mobile - 375px and below */
 @media (max-width: 375px) {
 
-    .download-image-btn {
-        font-size: 0.85em;
-        padding: 5px 10px;
-        margin-top: 10px;
-    }
-
     .header-left, .header-right {
         height: 9vh;
     }
@@ -414,11 +397,6 @@
 
 /* Very Small Mobile - 320px and below */
 @media (max-width: 320px) {
-    .download-image-btn {
-        font-size: 0.8em;
-        padding: 4px 8px;
-        letter-spacing: 0.3px;
-    }
 
     /* Decorative Elements */
     .horse-left, .horse-right {

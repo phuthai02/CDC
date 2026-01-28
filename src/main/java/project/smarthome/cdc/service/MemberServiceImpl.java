@@ -30,6 +30,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -198,13 +199,12 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public CDCResponse downloadImage(String deviceId) {
-        CDCResponse response = new CDCResponse();
+    public byte[] downloadImage(String deviceId) {
         try {
             Member member = memberRepository.findFirstByDeviceId(deviceId);
             if (member == null) {
-                response.setCode(RESPONSE_NOT_FOUND);
-                return response;
+                log.error("[CDC] Member not found for deviceId: {}", deviceId);
+                return null;
             }
 
             // Format ID as 3 digits: 001, 021, 111
@@ -213,12 +213,12 @@ public class MemberServiceImpl implements MemberService {
             String outputPath = "src/main/resources/static/downloads/" + fileName;
             File outputFile = new File(outputPath);
 
-            // Kiểm tra nếu ảnh đã tồn tại thì return luôn
+            // Kiểm tra nếu ảnh đã tồn tại thì đọc và return luôn
             if (outputFile.exists()) {
-                log.info("[CDC] Image already exists: {}", fileName);
-                response.setCode(RESPONSE_SUCCESS);
-                response.setData("/downloads/" + fileName);
-                return response;
+                log.info("[CDC] Image already exists, reading file: {}", fileName);
+                try (FileInputStream fis = new FileInputStream(outputFile)) {
+                    return fis.readAllBytes();
+                }
             }
 
             // Tạo thư mục nếu chưa có
@@ -240,19 +240,20 @@ public class MemberServiceImpl implements MemberService {
 
             g2d.dispose();
 
-            // Lưu file
+            // Lưu file và convert sang byte[]
             ImageIO.write(image, "png", outputFile);
 
             log.info("[CDC] Image created: {} with lucky number: {}", fileName, luckyNumber);
 
-            response.setCode(RESPONSE_SUCCESS);
-            response.setData("/downloads/" + fileName);
+            // Đọc file vừa tạo thành byte[]
+            try (FileInputStream fis = new FileInputStream(outputFile)) {
+                return fis.readAllBytes();
+            }
 
         } catch (Exception e) {
             log.error("[CDC] Error in downloadImage", e);
-            response.setCode(RESPONSE_ERROR);
+            return null;
         }
-        return response;
     }
 
     @Override
@@ -367,17 +368,19 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public CDCResponse exportExcel(String actor) {
-        CDCResponse response = checkActor(actor);
-        if (response.getCode() != null) return response;
-
+    public byte[] exportExcel(String actor) {
         try {
+            // Kiểm tra actor
+            if (!StringUtils.hasText(actor)) {
+                log.error("[CDC] Unauthorized export attempt");
+                return null;
+            }
+
             List<Member> members = memberRepository.findAll();
             members.sort(Comparator.comparing(Member::getId).reversed());
 
-            byte[] excelBytes;
-
-            try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            try (Workbook workbook = new XSSFWorkbook();
+                 ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
                 Sheet sheet = workbook.createSheet("Danh Sách Nhân Viên");
 
@@ -433,17 +436,12 @@ public class MemberServiceImpl implements MemberService {
                 }
 
                 workbook.write(out);
-                excelBytes = out.toByteArray();
+                return out.toByteArray();
             }
-
-            response.setCode(RESPONSE_SUCCESS);
-            response.setData(excelBytes);
-            return response;
 
         } catch (Exception e) {
             log.error("[CDC] Error in exportExcel", e);
-            response.setCode(RESPONSE_ERROR);
-            return response;
+            return null;
         }
     }
 
