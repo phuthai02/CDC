@@ -13,6 +13,14 @@ const submitBtn = document.getElementById('submit-btn');
 function downloadOnClick() {
     const deviceId = localStorage.getItem("deviceId");
     if (deviceId) {
+        // Lấy và disable nút hint-text
+        const hintText = document.querySelector('.hint-text');
+        if (hintText) {
+            hintText.style.pointerEvents = 'none';
+            hintText.style.opacity = '0.6';
+            hintText.innerHTML = '<u>Đang tạo ảnh...</u>';
+        }
+
         downloadImage(deviceId);
     }
 }
@@ -92,63 +100,13 @@ function startPetalRain() {
     }, 2000);
 }
 
-// Tạo pháo hoa GIF ngẫu nhiên
-function createFireworkGif() {
-    const firework = document.createElement('img');
-
-    // Chọn ngẫu nhiên 1 trong 3 file GIF
-    const fireworkNumber = Math.floor(Math.random() * 3) + 1;
-    firework.src = `images/firework_${fireworkNumber}.gif`;
-    firework.className = 'firework-gif';
-
-    // Vị trí ngẫu nhiên (tránh các góc màn hình)
-    const xPosition = 10 + Math.random() * 80;
-    const yPosition = 10 + Math.random() * 60;
-    firework.style.left = xPosition + '%';
-    firework.style.top = yPosition + '%';
-
-    // Kích thước ngẫu nhiên (150px - 350px)
-    const size = 150 + Math.random() * 200;
-    firework.style.width = size + 'px';
-    firework.style.height = size + 'px';
-
-    // Thêm vào body
-    document.body.appendChild(firework);
-
-    // Xóa sau 3 giây (thời gian hiển thị GIF)
-    setTimeout(() => {
-        firework.style.animation = 'fadeOut 0.5s ease-out forwards';
-        setTimeout(() => {
-            firework.remove();
-        }, 500);
-    }, 3000);
-}
-
-function startFireworkShow() {
-    setInterval(() => {
-        // Ngẫu nhiên có nổ pháo hoa hay không (70% cơ hội)
-        if (Math.random() > 0.3) {
-            createFireworkGif();
-
-            // Có thể nổ thêm 1 pháo hoa nữa (30% cơ hội)
-            if (Math.random() > 0.7) {
-                setTimeout(() => {
-                    createFireworkGif();
-                }, 500);
-            }
-        }
-    }, 2000);
-}
 
 // Chuyển từ welcome screen sang form screen
 startBtn.addEventListener('click', function() {
     // Hiệu ứng chuyển đổi
     welcomeScreen.style.animation = 'fadeOut 0.5s ease-out forwards';
-
-    setTimeout(() => {
-        welcomeScreen.style.display = 'none';
-        formScreen.classList.add('show');
-    }, 500);
+    welcomeScreen.style.display = 'none';
+    formScreen.classList.add('show');
 });
 
 
@@ -249,10 +207,8 @@ function showErrorResult(msg) {
     `;
 
     formScreen.style.animation = 'fadeOut 0.5s ease-out forwards';
-    setTimeout(() => {
-        formScreen.style.display = 'none';
-        resultScreen.classList.add('show');
-    }, 500);
+    formScreen.style.display = 'none';
+    resultScreen.classList.add('show');
 }
 
 function showSuccessResult(id, deviceId) {
@@ -271,21 +227,48 @@ function showSuccessResult(id, deviceId) {
 
     formScreen.style.animation = 'fadeOut 0.5s ease-out forwards';
 
-    setTimeout(() => {
-        formScreen.style.display = 'none';
-        resultScreen.classList.add('show');
-        const hintText = document.querySelector('.hint-text');
-        if (hintText) {
-            hintText.addEventListener('click', downloadOnClick);
-            hintText.addEventListener('touchstart', downloadOnClick, { passive: false });
+    formScreen.style.display = 'none';
+    resultScreen.classList.add('show');
+    const hintText = document.querySelector('.hint-text');
+    if (hintText) {
+        let isDownloading = false; // Ngăn download nhiều lần
+
+        // Hàm xử lý download
+        const handleDownloadTrigger = function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Ngăn download nếu đang xử lý
+            if (isDownloading) {
+                return;
+            }
+
+            isDownloading = true;
+            downloadOnClick();
+            isDownloading = false;
+        };
+
+        // CHỈ GẮN 1 EVENT DUY NHẤT cho PC (click)
+        // Touch events chỉ cho mobile
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        if (isMobile) {
+            // KHÔNG DÙNG once:true để có thể click nhiều lần
+            hintText.addEventListener('touchstart', handleDownloadTrigger, {passive: false});
+        } else {
+            // KHÔNG DÙNG once:true để có thể click nhiều lần
+            hintText.addEventListener('click', handleDownloadTrigger);
         }
-    }, 500);
+    }
 }
 
 // Thay thế hàm downloadImage cũ
 async function downloadImage(deviceId) {
+    const hintText = document.querySelector('.hint-text');
+
     try {
-        const response = await fetch(`/download-image?deviceId=${encodeURIComponent(deviceId)}`);
+        const url =`/download-image?deviceId=${encodeURIComponent(deviceId)}`;
+        const response = await fetch(url);
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -301,21 +284,34 @@ async function downloadImage(deviceId) {
 
         if (isMobile) {
             // Mobile: Hiển thị modal với hướng dẫn hoặc nút download
-            showMobileImageModal(blob, isIOS);
+            showMobileImageModal(url, blob, isIOS);
         } else {
             // Desktop: Download trực tiếp
-            downloadDirectly(blob, 'lucky_number.png');
-            showToast('Đã tải xuống thành công');
+            downloadDirectly(url);
+        }
+
+        // Reset lại text và enable nút sau khi xử lý xong
+        if (hintText) {
+            hintText.innerHTML = '<u>Nhấn để tải hình ảnh</u>';
+            hintText.style.pointerEvents = 'auto';
+            hintText.style.opacity = '1';
         }
 
     } catch (error) {
         console.error('[Download Image] Error:', error);
         alert(`Không thể tải hình ảnh: ${error.message}`);
+
+        // Reset lại text và enable nút khi có lỗi
+        if (hintText) {
+            hintText.innerHTML = '<u>Nhấn để tải hình ảnh</u>';
+            hintText.style.pointerEvents = 'auto';
+            hintText.style.opacity = '1';
+        }
     }
 }
 
-// Hiển thị modal cho mobile (iOS + Android)
-function showMobileImageModal(blob, isIOS) {
+// Hiển thị modal cho mobile (iOS + Android) - ĐÃ TỐI ƯU CHO ZALO BROWSER
+function showMobileImageModal(url, blob, isIOS) {
     // Xóa modal cũ nếu còn tồn tại
     const existingModal = document.getElementById('image-modal');
     if (existingModal) {
@@ -355,65 +351,126 @@ function showMobileImageModal(blob, isIOS) {
                         </div>
                     </div>
                 ` : `
-                    <!-- Nút tải xuống cho Android -->
-                    <button class="download-btn" id="download-btn">Tải xuống ảnh</button>
+                    <!-- Nút tải xuống cho Android - TỐI ƯU CHO ZALO BROWSER -->
+                    <button class="download-btn" id="download-btn" type="button">Tải xuống</button>
                 `}
                 
                 <!-- Nút đóng -->
-                <button class="close-modal-btn" id="close-modal-btn">Đóng</button>
+                <button class="close-modal-btn" id="close-modal-btn" type="button">Đóng</button>
             </div>
         `;
 
         document.body.appendChild(modal);
 
-        // Animation vào
-        setTimeout(() => {
+        // Đảm bảo DOM đã render xong trước khi gắn event - QUAN TRỌNG CHO ZALO BROWSER
+        requestAnimationFrame(() => {
+            // Animation vào
             modal.classList.add('show');
-        }, 10);
 
-        // Xử lý nút download cho Android
-        if (!isIOS) {
-            const downloadBtn = document.getElementById('download-btn');
-            if (downloadBtn) {
-                downloadBtn.onclick = function(e) {
+            // Xử lý nút download cho Android - FIX: Tránh download 2 lần
+            if (!isIOS) {
+                const downloadBtn = document.getElementById('download-btn');
+                if (downloadBtn) {
+                    let isProcessing = false;
+
+                    const handleDownload = function (e) {
+                        e.stopPropagation();
+
+                        if (isProcessing) return;
+                        isProcessing = true;
+
+                        // Disable button
+                        downloadBtn.disabled = true;
+                        downloadBtn.textContent = 'Đang tải...';
+
+                        try {
+                            downloadDirectly(url);
+                        } finally {
+                            // Re-enable sau 2s
+                            setTimeout(() => {
+                                downloadBtn.disabled = false;
+                                downloadBtn.textContent = 'Tải xuống';
+                                isProcessing = false;
+                            }, 2000);
+                        }
+                    };
+
+                    // Detect mobile để chọn event phù hợp
+                    const isTouchDevice = 'ontouchstart' in window;
+
+                    if (isTouchDevice) {
+                        // Mobile: Chỉ dùng touchend (không dùng click để tránh double fire)
+                        // KHÔNG DÙNG once:true vì đã có flag isProcessing control rồi
+                        downloadBtn.addEventListener('touchend', handleDownload, {passive: false});
+                    } else {
+                        // Desktop: Chỉ dùng click
+                        // KHÔNG DÙNG once:true vì đã có flag isProcessing control rồi
+                        downloadBtn.addEventListener('click', handleDownload);
+                    }
+
+                    // Thêm style để đảm bảo button có thể click được trên mọi browser
+                    downloadBtn.style.pointerEvents = 'auto';
+                    downloadBtn.style.cursor = 'pointer';
+                    downloadBtn.style.userSelect = 'none';
+                    downloadBtn.style.webkitUserSelect = 'none';
+                    downloadBtn.style.webkitTouchCallout = 'none';
+                    downloadBtn.style.touchAction = 'manipulation'; // Ngăn zoom khi double tap
+                }
+            }
+
+            // Xử lý nút đóng
+            const closeBtn = document.getElementById('close-modal-btn');
+            if (closeBtn) {
+                const handleClose = function (e) {
+                    e.preventDefault();
                     e.stopPropagation();
-                    downloadDirectly(blob, 'lucky_number.png');
+                    closeImageModal(modal);
                 };
-            }
-        }
 
-        // Xử lý nút đóng - Đơn giản hóa
-        const closeBtn = document.getElementById('close-modal-btn');
-        if (closeBtn) {
-            closeBtn.onclick = function(e) {
-                e.stopPropagation();
-                closeImageModal(modal);
+                // Detect mobile
+                const isTouchDevice = 'ontouchstart' in window;
+
+                if (isTouchDevice) {
+                    // Giữ once:true cho nút đóng vì modal sẽ bị remove
+                    closeBtn.addEventListener('touchend', handleClose, {passive: false});
+                } else {
+                    // Giữ once:true cho nút đóng vì modal sẽ bị remove
+                    closeBtn.addEventListener('click', handleClose);
+                }
+
+                // Thêm style cho nút đóng
+                closeBtn.style.pointerEvents = 'auto';
+                closeBtn.style.cursor = 'pointer';
+                closeBtn.style.userSelect = 'none';
+                closeBtn.style.webkitUserSelect = 'none';
+                closeBtn.style.webkitTouchCallout = 'none';
+                closeBtn.style.touchAction = 'manipulation';
+            }
+
+            // Đóng khi click vào background
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) {
+                    closeImageModal(modal);
+                }
+            }, false);
+
+            // Ngăn đóng modal khi click vào modal-content
+            const modalContent = modal.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                }, false);
+            }
+
+            // Đóng khi nhấn ESC
+            const handleEsc = function (e) {
+                if (e.key === 'Escape') {
+                    closeImageModal(modal);
+                    document.removeEventListener('keydown', handleEsc);
+                }
             };
-        }
-
-        // Đóng khi click vào background
-        modal.onclick = function(e) {
-            if (e.target === modal) {
-                closeImageModal(modal);
-            }
-        };
-
-        // Ngăn đóng modal khi click vào modal-content
-        const modalContent = modal.querySelector('.modal-content');
-        if (modalContent) {
-            modalContent.onclick = function(e) {
-                e.stopPropagation();
-            };
-        }
-
-        // Đóng khi nhấn ESC
-        const handleEsc = function(e) {
-            if (e.key === 'Escape') {
-                closeImageModal(modal);
-                document.removeEventListener('keydown', handleEsc);
-            }
-        };
-        document.addEventListener('keydown', handleEsc);
+            document.addEventListener('keydown', handleEsc);
+        });
     };
 
     reader.readAsDataURL(blob);
@@ -430,19 +487,9 @@ function closeImageModal(modal) {
     }, 300);
 }
 
-// Download trực tiếp (cho desktop)
-function downloadDirectly(blob, filename) {
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-
-    setTimeout(() => {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-    }, 100);
+// Download trực tiếp (cho desktop và Android)
+function downloadDirectly(url) {
+    window.location.href = url;
 }
 
 // Hiển thị toast notification
