@@ -12,6 +12,7 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     Member findFirstByNameAndDateOfBirth(String name, Date dateOfBirth);
     Member findFirstByDeviceId(String deviceId);
     Member findFirstById(Integer id);
+    Page<Member> findById(Integer id, Pageable pageable);
     Page<Member> findByNameContainingIgnoreCase(String keyword, Pageable pageable);
     @Query("SELECT MAX(m.id) FROM Member m")
     Integer getMaxId();

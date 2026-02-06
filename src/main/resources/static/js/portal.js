@@ -3,6 +3,7 @@ let currentPage = 0;
 let pageSize = 10;
 let totalElements = 0;
 let totalPages = 0;
+let totalAll = 0;
 let idMax = 0;
 let allowCreate = false;
 let currentData = [];
@@ -11,6 +12,172 @@ let editingRowId = null;
 let searchTimeout = null;
 const socket = new SockJS('/ws');
 const stompClient = Stomp.over(socket);
+let addingRowType = null;
+
+
+// ===== ADD BUTTON EVENT LISTENERS =====
+document.getElementById('add-member-btn').addEventListener('click', () => {
+    showAddRow('member');
+});
+
+document.getElementById('add-guest-btn').addEventListener('click', () => {
+    showAddRow('guest');
+});
+
+// ===== ADD FUNCTIONS =====
+function showAddRow(type) {
+    if (editingRowId !== null) {
+        showToast('Vui lòng hoàn thành chỉnh sửa hiện tại trước', 'error');
+        return;
+    }
+
+    if (addingRowType !== null) {
+        showToast('Vui lòng hoàn thành thêm người hiện tại trước', 'error');
+        return;
+    }
+
+    addingRowType = type; // 'member' hoặc 'guest'
+    const tableBody = document.getElementById('table-body');
+
+    const addRow = document.createElement('tr');
+    addRow.classList.add('adding');
+    addRow.id = 'add-row';
+
+    addRow.innerHTML = `
+        <td style="width: 60px;">-</td>
+        <td style="width: 150px;"><span class="lucky-number">???</span></td>
+        <td style="width: 200px;">
+            <input type="text" class="edit-input" id="add-name" placeholder="Nhập họ và tên">
+            <span class="error-message" id="error-add-name"></span>
+        </td>
+        <td style="width: 150px;">
+            <input type="text" class="edit-input" id="add-dob" placeholder="dd/mm/yyyy">
+            <span class="error-message" id="error-add-dob"></span>
+        </td>
+        <td style="width: 120px;">-</td>
+        <td style="width: 200px;">-</td>
+        <td style="width: 200px;">-</td>
+        <td style="width: 200px;">-</td>
+        <td style="width: 180px;">
+            <div class="action-btns">
+                <button class="btn btn-save" onclick="saveAddRow()">Lưu mới</button>
+                <button class="btn btn-cancel" onclick="cancelAddRow()">Hủy bỏ</button>
+            </div>
+        </td>
+    `;
+
+    tableBody.insertBefore(addRow, tableBody.firstChild);
+
+    const nameInput = document.getElementById('add-name');
+    const dobInput = document.getElementById('add-dob');
+
+    nameInput.addEventListener('blur', validateAddNameInput);
+    dobInput.addEventListener('blur', validateAddDobInput);
+
+    nameInput.focus();
+}
+
+function validateAddNameInput() {
+    const nameInput = document.getElementById('add-name');
+    const errorSpan = document.getElementById('error-add-name');
+    const validation = validateFullname(nameInput.value);
+
+    if (!validation.valid) {
+        nameInput.classList.add('error');
+        errorSpan.textContent = validation.message;
+        return false;
+    } else {
+        nameInput.classList.remove('error');
+        errorSpan.textContent = '';
+        return true;
+    }
+}
+
+function validateAddDobInput() {
+    const dobInput = document.getElementById('add-dob');
+    const errorSpan = document.getElementById('error-add-dob');
+    const validation = validateBirthdate(dobInput.value);
+
+    if (!validation.valid) {
+        dobInput.classList.add('error');
+        errorSpan.textContent = validation.message;
+        return false;
+    } else {
+        dobInput.classList.remove('error');
+        errorSpan.textContent = '';
+        dobInput.value = validation.formatted;
+        return true;
+    }
+}
+
+function cancelAddRow() {
+    const addRow = document.getElementById('add-row');
+    if (addRow) {
+        addRow.remove();
+    }
+    addingRowType = null;
+}
+
+async function saveAddRow() {
+    const nameInput = document.getElementById('add-name');
+    const dobInput = document.getElementById('add-dob');
+
+    const isNameValid = validateAddNameInput();
+    const isDobValid = validateAddDobInput();
+
+    if (!isNameValid || !isDobValid) {
+        showToast('Vui lòng kiểm tra lại thông tin', 'error');
+        return;
+    }
+
+    const name = nameInput.value.trim();
+    const dateOfBirth = dobInput.value.trim();
+    const type = addingRowType === 'member' ? 1 : 2;
+    const typeText = addingRowType === 'member' ? 'nhân sự' : 'khách mời';
+
+    const deviceId = await getDeviceId();
+    if (!deviceId) return;
+
+    const member = {
+        name: name,
+        dateOfBirth: dateOfBirth
+    };
+
+    fetch(`/?type=${type}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'actor': deviceId
+        },
+        body: JSON.stringify(member)
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.code === 200) {
+                showToast(`Thêm ${typeText} thành công với số may mắn ${formatLuckyNumber(data.data.id)}`, 'success');
+                cancelAddRow();
+                loadData();
+            } else if (data.code === 409) {
+                showToast(`Đã tồn tại ${typeText} với số may mắn ${formatLuckyNumber(data.data.id)}`, 'info');
+                cancelAddRow();
+                loadData();
+            } else if (data.code === 404) {
+                showToast('Thông tin không chính xác', 'error');
+            } else if (data.code === 403) {
+                showToast('Hết giờ đăng ký', 'error');
+            } else if (data.code === 401) {
+                handleUnauthorized();
+            } else if (data.code === 500) {
+                showToast('Lỗi hệ thống', 'error');
+            } else {
+                showToast(data.message || 'Lỗi không xác định', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Lỗi kết nối đến server', 'error');
+        });
+}
 
 // ===== DEVICE ID MANAGEMENT =====
 async function getDeviceId() {
@@ -191,7 +358,7 @@ function login() {
 
 // ===== STATS UPDATE =====
 function updateStats() {
-    document.getElementById('total-count').textContent = totalElements;
+    document.getElementById('total-count').textContent = totalAll;
     document.getElementById('max-number').textContent = formatLuckyNumber(idMax);
 }
 
@@ -220,6 +387,9 @@ function enableEdit(id) {
             <input type="text" class="edit-input" id="edit-dob-${id}" value="${employee.dateOfBirth || ''}" placeholder="dd/mm/yyyy">
             <span class="error-message" id="error-dob-${id}"></span>
         </td>
+        <td style="width: 120px;">${employee.memberId || 'N/A'}</td>
+        <td style="width: 200px;">${employee.memberDepartment || 'N/A'}</td>
+        <td style="width: 200px;">${employee.memberRole || 'N/A'}</td>
         <td style="width: 200px;">${employee.createdTime ? formatTime(employee.createdTime) : 'N/A'}</td>
         <td style="width: 180px;">
             <div class="action-btns">
@@ -381,10 +551,14 @@ function deleteEmployee(id) {
 
 // ===== TABLE RENDERING =====
 function renderTable(employees) {
+    // Nếu đang thêm người, giữ lại dòng thêm
+    const addRow = document.getElementById('add-row');
+    const addRowHTML = addRow ? addRow.outerHTML : null;
+
     const tableBody = document.getElementById('table-body');
 
-    if (employees.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 50px; color: #666;"><strong>KHÔNG CÓ DỮ LIỆU</strong></td></tr>';
+    if (employees.length === 0 && !addRowHTML) {
+        tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 50px; color: #666;"><strong>KHÔNG CÓ DỮ LIỆU</strong></td></tr>';
         return;
     }
 
@@ -393,9 +567,12 @@ function renderTable(employees) {
         return `
             <tr data-id="${emp.id}">
                 <td style="width: 60px;">${globalIndex}</td>
-                <td style="width: 120px;"><span class="lucky-number">${formatLuckyNumber(emp.id)}</span></td>
+                <td style="width: 150px;"><span class="lucky-number">${formatLuckyNumber(emp.id)}</span></td>
                 <td style="width: 200px;">${emp.name || 'N/A'}</td>
                 <td style="width: 150px;">${emp.dateOfBirth || 'N/A'}</td>
+                <td style="width: 200px;">${emp.memberId || 'N/A'}</td>
+                <td style="width: 200px;">${emp.memberDepartment || 'N/A'}</td>
+                <td style="width: 200px;">${emp.memberRole || 'N/A'}</td>
                 <td style="width: 200px;">${emp.createdTime ? formatTime(emp.createdTime) : 'N/A'}</td>
                 <td style="width: 180px;">
                     <div class="action-btns">
@@ -406,6 +583,18 @@ function renderTable(employees) {
             </tr>
         `;
     }).join('');
+
+    if (addRowHTML) {
+        tableBody.insertAdjacentHTML('afterbegin', addRowHTML);
+
+        // Gắn lại event listeners
+        const nameInput = document.getElementById('add-name');
+        const dobInput = document.getElementById('add-dob');
+        if (nameInput && dobInput) {
+            nameInput.addEventListener('blur', validateAddNameInput);
+            dobInput.addEventListener('blur', validateAddDobInput);
+        }
+    }
 }
 
 // ===== PAGINATION =====
@@ -498,6 +687,7 @@ async function loadData() {
                 currentData = data.data.items || [];
                 totalElements = data.data.totalElements || 0;
                 totalPages = data.data.totalPages || 0;
+                totalAll = data.data.totalAll || 0;
                 idMax = data.data.idMax || 0;
                 allowCreate = data.data.allowCreate || false;
                 renderTable(currentData);

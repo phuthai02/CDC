@@ -473,12 +473,20 @@ public class MemberServiceImpl implements MemberService {
 
         try {
             Pageable pageable = PageRequest.of(page, pageSize, Sort.by("id").descending());
-            Page<Member> resultPage = memberRepository.findByNameContainingIgnoreCase(keyWord, pageable);
+
+            Page<Member> resultPage;
+            if (keyWord != null && keyWord.matches("\\d+")) {
+                Integer id = Integer.parseInt(keyWord);
+                resultPage = memberRepository.findById(id, pageable);
+            } else {
+                resultPage = memberRepository.findByNameContainingIgnoreCase(keyWord, pageable);
+            }
 
             Map<String, Object> data = new HashMap<>();
             data.put("items", resultPage.getContent());
             data.put("totalElements", resultPage.getTotalElements());
             data.put("totalPages", resultPage.getTotalPages());
+            data.put("totalAll", memberRepository.count());
             data.put("idMax", memberRepository.getMaxId());
             data.put("allowCreate", isAllowCreate());
 

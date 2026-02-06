@@ -51,6 +51,7 @@ button {
 .stats-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
     margin-bottom: 20px;
 }
 
@@ -58,15 +59,10 @@ button {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 15px;
     padding: 20px;
-    margin-right: 20px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
     border: 2px solid #DC143C;
     text-align: center;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.stat-card:last-child {
-    margin-right: 0;
 }
 
 .stat-card:hover {
@@ -96,16 +92,40 @@ button {
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
     border: 2px solid #DC143C;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
     flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.add-btn {
+    padding: 12px 24px;
+    font-size: 1em;
+    font-weight: 600;
+    background: linear-gradient(135deg, #2196F3, #0b7dda);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 15px rgba(33, 150, 243, 0.3);
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+.add-btn:hover {
+    background: linear-gradient(135deg, #0b7dda, #1976D2);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(33, 150, 243, 0.5);
+}
+
+.add-btn:active {
+    transform: translateY(0);
 }
 
 .search-box {
-    flex: 1;
+    flex: 1 1 300px;
     min-width: 250px;
     position: relative;
-    margin: 0 20px;
 }
 
 .search-box input {
@@ -119,7 +139,7 @@ button {
 }
 
 .allow-cre-btn {
-    padding: 12px 30px;
+    padding: 12px 24px;
     font-size: 1em;
     font-weight: 600;
     color: white;
@@ -127,6 +147,8 @@ button {
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
+    white-space: nowrap;
+    flex: 0 0 auto;
 }
 
 .allow-cre-btn.enabled {
@@ -156,7 +178,7 @@ button {
 }
 
 .excel-btn {
-    padding: 12px 30px;
+    padding: 12px 24px;
     font-size: 1em;
     font-weight: 600;
     background: linear-gradient(135deg, #1D6F42, #217346);
@@ -166,6 +188,8 @@ button {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 3px 15px rgba(33, 115, 70, 0.3);
+    white-space: nowrap;
+    flex: 0 0 auto;
 }
 
 .excel-btn:hover {
@@ -189,18 +213,32 @@ button {
 .table-container {
     height: 500px;
     overflow: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
 }
 
 .table-container::-webkit-scrollbar {
-    display: none;
+    width: 0px;
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: #DC143C;
+    border-radius: 10px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #b01030;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;
+    table-layout: auto;
+    min-width: 1400px;
 }
 
 thead {
@@ -233,6 +271,11 @@ tbody tr:hover {
 
 tbody tr.editing {
     background: #fffbea;
+}
+
+tbody tr.adding {
+    background: #e3f2fd;
+    border: 2px solid #2196F3;
 }
 
 tbody td {
@@ -639,16 +682,11 @@ tbody td {
 
     .stats-container {
         margin-bottom: 10px;
+        gap: 10px;
     }
 
     .stat-card {
         padding: 10px;
-        margin-right: 0;
-        margin-bottom: 10px;
-    }
-
-    .stat-card:last-child {
-        margin-bottom: 0;
     }
 
     .stat-card .number {
@@ -658,18 +696,39 @@ tbody td {
     .controls {
         padding: 10px;
         margin-bottom: 10px;
-        flex-direction: column;
     }
 
     .search-box {
         width: 100%;
         min-width: 100%;
-        margin: 10px 0;
+        order: 1;
+        flex: 1 1 100%;
     }
 
-    .allow-cre-btn,
+    .add-btn {
+        width: 100%;
+        order: 2;
+        flex: 1 1 100%;
+    }
+
+    #add-member-btn {
+        order: 2;
+    }
+
+    #add-guest-btn {
+        order: 3;
+    }
+
+    .allow-cre-btn {
+        width: 100%;
+        order: 4;
+        flex: 1 1 100%;
+    }
+
     .excel-btn {
         width: 100%;
+        order: 5;
+        flex: 1 1 100%;
     }
 
     .table-wrapper {
