@@ -60,8 +60,8 @@ function showAddRow(type) {
         <td style="width: 200px;">-</td>
         <td style="width: 180px;">
             <div class="action-btns">
-                <button class="btn btn-save" onclick="saveAddRow()">Lưu mới</button>
-                <button class="btn btn-cancel" onclick="cancelAddRow()">Hủy bỏ</button>
+                <button class="btn btn-save" onclick="saveAdd()">Lưu mới</button>
+                <button class="btn btn-cancel" onclick="cancelAdd()">Hủy bỏ</button>
             </div>
         </td>
     `;
@@ -69,10 +69,6 @@ function showAddRow(type) {
     tableBody.insertBefore(addRow, tableBody.firstChild);
 
     const nameInput = document.getElementById('add-name');
-    const dobInput = document.getElementById('add-dob');
-
-    nameInput.addEventListener('blur', validateAddNameInput);
-    dobInput.addEventListener('blur', validateAddDobInput);
 
     nameInput.focus();
 }
@@ -110,15 +106,12 @@ function validateAddDobInput() {
     }
 }
 
-function cancelAddRow() {
-    const addRow = document.getElementById('add-row');
-    if (addRow) {
-        addRow.remove();
-    }
+function cancelAdd() {
     addingRowType = null;
+    loadData();
 }
 
-async function saveAddRow() {
+async function saveAdd() {
     const nameInput = document.getElementById('add-name');
     const dobInput = document.getElementById('add-dob');
 
@@ -155,20 +148,14 @@ async function saveAddRow() {
         .then(data => {
             if (data.code === 200) {
                 showToast(`Thêm ${typeText} thành công với số may mắn ${formatLuckyNumber(data.data.id)}`, 'success');
-                cancelAddRow();
-                loadData();
             } else if (data.code === 409) {
                 showToast(`Đã tồn tại ${typeText} với số may mắn ${formatLuckyNumber(data.data.id)}`, 'info');
-                cancelAddRow();
-                loadData();
             } else if (data.code === 404) {
                 showToast('Thông tin không chính xác', 'error');
             } else if (data.code === 403) {
                 showToast('Hết giờ đăng ký', 'error');
             } else if (data.code === 401) {
                 handleUnauthorized();
-            } else if (data.code === 500) {
-                showToast('Lỗi hệ thống', 'error');
             } else {
                 showToast(data.message || 'Lỗi không xác định', 'error');
             }
@@ -176,6 +163,9 @@ async function saveAddRow() {
         .catch(error => {
             console.error('Error:', error);
             showToast('Lỗi kết nối đến server', 'error');
+        })
+        .finally(() => {
+            cancelAdd();
         });
 }
 
@@ -369,6 +359,11 @@ function enableEdit(id) {
         return;
     }
 
+    if (addingRowType !== null) {
+        showToast('Vui lòng hoàn thành thêm người hiện tại trước', 'error');
+        return;
+    }
+
     editingRowId = id;
     const employee = currentData.find(e => e.id === id);
     const row = document.querySelector(`tr[data-id="${id}"]`);
@@ -441,7 +436,7 @@ function validateDobInput(id) {
 
 function cancelEdit() {
     editingRowId = null;
-    renderTable(currentData);
+    loadData();
 }
 
 async function saveEdit(id) {
@@ -501,6 +496,9 @@ async function saveEdit(id) {
                 .catch(error => {
                     console.error('Error:', error);
                     showToast('Lỗi kết nối đến server', 'error');
+                })
+                .finally(() => {
+                    cancelEdit();
                 });
         }
     );
@@ -551,13 +549,9 @@ function deleteEmployee(id) {
 
 // ===== TABLE RENDERING =====
 function renderTable(employees) {
-    // Nếu đang thêm người, giữ lại dòng thêm
-    const addRow = document.getElementById('add-row');
-    const addRowHTML = addRow ? addRow.outerHTML : null;
-
     const tableBody = document.getElementById('table-body');
 
-    if (employees.length === 0 && !addRowHTML) {
+    if (employees.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 50px; color: #666;"><strong>KHÔNG CÓ DỮ LIỆU</strong></td></tr>';
         return;
     }
@@ -583,18 +577,6 @@ function renderTable(employees) {
             </tr>
         `;
     }).join('');
-
-    if (addRowHTML) {
-        tableBody.insertAdjacentHTML('afterbegin', addRowHTML);
-
-        // Gắn lại event listeners
-        const nameInput = document.getElementById('add-name');
-        const dobInput = document.getElementById('add-dob');
-        if (nameInput && dobInput) {
-            nameInput.addEventListener('blur', validateAddNameInput);
-            dobInput.addEventListener('blur', validateAddDobInput);
-        }
-    }
 }
 
 // ===== PAGINATION =====
@@ -904,7 +886,9 @@ document.getElementById('login-dob').addEventListener('blur', function() {
 // ===== WEBSOCKET SUBSCRIPTION =====
 stompClient.connect({}, function () {
     stompClient.subscribe('/topic/event', async function (message) {
-        loadData();
+        if(addingRowType === null && editingRowId === null) {
+            loadData();
+        }
     });
 });
 
