@@ -241,6 +241,12 @@ table {
     min-width: 1400px;
 }
 
+tbody td:nth-child(5) {
+    color: #DC143C;
+    text-align: center;
+    font-weight: 700;
+}
+
 thead {
     position: static;
 }
@@ -258,6 +264,9 @@ thead th {
     z-index: 10;
     background: linear-gradient(135deg, #DC143C, #FF6347);
     color: white;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 tbody tr {
