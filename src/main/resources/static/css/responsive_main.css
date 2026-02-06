@@ -486,3 +486,69 @@
         font-size: 2.2em;
     }
 }
+
+/* Tablet & Mobile - 768px and below */
+@media (max-width: 768px) {
+    .notification-box {
+        padding: 16px;
+    }
+
+    .notification-box p {
+        font-size: 1.3em;
+    }
+
+    .form-action-btn {
+        padding: 15px;
+        font-size: 1.1em;
+    }
+}
+
+/* Small Mobile - 480px and below */
+@media (max-width: 480px) {
+    .notification-box {
+        padding: 14px;
+        border-radius: 10px;
+    }
+
+    .notification-box p {
+        font-size: 1.25em;
+    }
+
+    .form-action-btn {
+        padding: 14px;
+        font-size: 1.05em;
+    }
+}
+
+/* Extra Small Mobile - 375px and below */
+@media (max-width: 375px) {
+    .notification-box {
+        padding: 12px;
+    }
+
+    .notification-box p {
+        font-size: 1.2em;
+    }
+
+    .form-action-btn {
+        padding: 13px;
+        font-size: 1em;
+    }
+}
+
+/* Very Small Mobile - 320px and below */
+@media (max-width: 320px) {
+    .notification-box {
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .notification-box p {
+        font-size: 1.15em;
+    }
+
+    .form-action-btn {
+        padding: 12px;
+        font-size: 0.95em;
+    }
+}

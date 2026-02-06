@@ -15,7 +15,7 @@ public class RequestLog {
     @Column(name = "ID")
     private Integer id;
 
-    @Column(name = "ACTOR", nullable = false, length = 124)
+    @Column(name = "ACTOR", nullable = false, length = 128)
     private String actor;
 
     @Column(name = "ACTION", nullable = false, length = 16)

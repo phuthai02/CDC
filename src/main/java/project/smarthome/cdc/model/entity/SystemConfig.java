@@ -15,6 +15,6 @@ public class SystemConfig {
     @Column(name = "`KEY`", nullable = false, length = 16)
     private String key;
 
-    @Column(name = "DATA", nullable = false, length = 124)
+    @Column(name = "DATA", nullable = false, length = 128)
     private String data;
 }

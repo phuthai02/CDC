@@ -929,3 +929,73 @@ button {
         padding: 12px 18px;
     }
 }
+
+/* Notification box */
+.notification-box {
+    text-align: center;
+    padding: 20px;
+    background: #fff5f5;
+    border-radius: 12px;
+    border: 2px solid #DC143C;
+    margin-bottom: 10px;
+}
+
+.notification-box p {
+    font-size: 1.4em;
+    color: #DC143C;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Form action buttons */
+.form-action-btn {
+    width: 100%;
+    padding: 18px;
+    font-size: 1.2em;
+    font-weight: 700;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 10px;
+}
+
+.retry-btn {
+    background: linear-gradient(135deg, #DC143C, #FF6347);
+    box-shadow: 0 5px 20px rgba(220, 20, 60, 0.4);
+}
+
+.retry-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(220, 20, 60, 0.6);
+    background: linear-gradient(135deg, #FF6347, #DC143C);
+}
+
+.retry-btn:active {
+    transform: translateY(0);
+}
+
+.guest-btn {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    box-shadow: 0 5px 20px rgba(76, 175, 80, 0.4);
+}
+
+.guest-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(76, 175, 80, 0.6);
+    background: linear-gradient(135deg, #45a049, #4CAF50);
+}
+
+.guest-btn:active {
+    transform: translateY(0);
+}
+
+.form-action-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}

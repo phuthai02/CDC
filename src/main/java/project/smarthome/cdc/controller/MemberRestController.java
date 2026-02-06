@@ -12,7 +12,6 @@ import project.smarthome.cdc.model.entity.Member;
 import project.smarthome.cdc.service.MemberService;
 import project.smarthome.cdc.utils.JsonUtils;
 
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -24,9 +23,9 @@ public class MemberRestController {
     private MemberService memberService;
 
     @PostMapping("")
-    public CDCResponse create(@RequestBody Member member) {
-        log.info("[CDC] create: member={}", JsonUtils.toJson(member));
-        return memberService.create(member);
+    public CDCResponse create(@RequestBody Member member, @RequestParam("type") Integer type) {
+        log.info("[CDC] create: member={}, type={}", JsonUtils.toJson(member), type);
+        return memberService.create(member, type);
     }
 
     @GetMapping("find-by-device")

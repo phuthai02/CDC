@@ -79,10 +79,14 @@ function validateFullname(fullname) {
     if (n.length < 2) return err('Họ tên phải có ít nhất 2 ký tự');
     if (n.length > 100) return err('Họ tên không được quá 100 ký tự');
     if (!/^[a-zA-ZÀ-ỹ\s]+$/.test(n)) return err('Họ tên chỉ được chứa chữ cái');
-    if (/\s{2,}/.test(n)) return err('Họ tên không được chứa khoảng trắng liên tiếp');
     if (n.split(/\s+/).filter(w => w).length < 2) return err('Vui lòng nhập đầy đủ họ và tên');
 
-    return { valid: true, cleaned: n };
+    // Viết hoa chữ cái đầu mỗi từ
+    const capitalized = n.split(/\s+/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+
+    return { valid: true, cleaned: capitalized };
 }
 
 function validateBirthdate(birthdate) {

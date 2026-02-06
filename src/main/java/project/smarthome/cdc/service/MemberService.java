@@ -4,7 +4,7 @@ import project.smarthome.cdc.model.dto.CDCResponse;
 import project.smarthome.cdc.model.entity.Member;
 
 public interface MemberService {
-    CDCResponse create(Member member);
+    CDCResponse create(Member member, Integer type);
     CDCResponse findByDeviceId(String deviceId);
     byte[] downloadImage(String deviceId);
     CDCResponse login(Member member);

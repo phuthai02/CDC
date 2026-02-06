@@ -123,6 +123,18 @@ birthdateInput.addEventListener('input', function() {
     document.getElementById('birthdate-error').classList.remove('show');
 });
 
+fullnameInput.addEventListener('blur', function() {
+    const value = this.value.trim();
+    if (value) {
+        // Loại bỏ khoảng trắng liên tiếp + Viết hoa chữ cái đầu mỗi từ
+        const capitalized = value.replace(/\s+/g, ' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+        this.value = capitalized;
+    }
+});
+
 birthdateInput.addEventListener('blur', function() {
     const value = this.value.trim();
     if (value) {
@@ -171,7 +183,7 @@ registrationForm.addEventListener('submit', function(e) {
             dateOfBirth: birthdateValidation.formatted
         };
 
-        fetch("/", {
+        fetch("/?type=1", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -182,6 +194,9 @@ registrationForm.addEventListener('submit', function(e) {
                 return response.json().then(data => {
                     if (data && (data.code === 200 || data.code === 409)) {
                         showSuccessResult(data.data.id, data.data.deviceId);
+                    }
+                    else if (data && data.code === 404) {
+                        showNotFoundForm(member);
                     }
                     else if (data && data.code === 403) {
                         showErrorResult("HẾT GIỜ ĐĂNG KÝ");
@@ -198,6 +213,218 @@ registrationForm.addEventListener('submit', function(e) {
             });
     }
 });
+
+function showNotFoundForm(memberData) {
+    // Ẩn form screen
+    formScreen.style.animation = 'fadeOut 0.5s ease-out forwards';
+
+    setTimeout(() => {
+        formScreen.style.display = 'none';
+
+        // Cập nhật nội dung form
+        const formContainer = document.querySelector('.form-container');
+        formContainer.innerHTML = `
+            <div class="notification-box">
+                <p>
+                    Thông tin chưa chính xác
+                </p>
+            </div>
+
+            <button type="button" id="retry-btn" class="form-action-btn retry-btn">Vui lòng nhập lại</button>
+            <button type="button" id="guest-btn" class="form-action-btn guest-btn">Tôi là khách mời</button>
+        `;
+
+        // Hiển thị lại form screen
+        formScreen.style.animation = '';
+        formScreen.style.display = '';
+        formScreen.classList.add('show');
+
+    }, 500);
+
+    // Sau khi DOM được render, gắn sự kiện
+    setTimeout(() => {
+        // Gắn sự kiện cho nút "Nhập lại thông tin"
+        document.getElementById('retry-btn').addEventListener('click', function() {
+            // Ẩn form hiện tại
+            formScreen.style.animation = 'fadeOut 0.5s ease-out forwards';
+
+            setTimeout(() => {
+                formScreen.style.display = 'none';
+
+                // Reset lại form về ban đầu
+                const formContainer = document.querySelector('.form-container');
+                formContainer.innerHTML = `
+                    <h2>ĐĂNG KÝ THÔNG TIN</h2>
+
+                    <form id="registration-form">
+                        <div class="form-group">
+                            <label for="fullname">Họ và tên <span>*</span></label>
+                            <input type="text" id="fullname" name="fullname" placeholder="Nhập họ và tên đầy đủ" value="${memberData.name || ''}">
+                            <div class="error-message" id="fullname-error">Vui lòng nhập họ và tên</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="birthdate">Ngày sinh <span>*</span></label>
+                            <input type="text" id="birthdate" name="birthdate" placeholder="Nhập ngày tháng năm sinh" value="${memberData.dateOfBirth || ''}">
+                            <div class="error-message" id="birthdate-error">Vui lòng nhập ngày sinh</div>
+                        </div>
+
+                        <button type="submit" id="submit-btn">Xác nhận</button>
+                    </form>
+                `;
+
+                // Hiển thị lại form screen
+                formScreen.style.animation = '';
+                formScreen.style.display = '';
+                formScreen.classList.add('show');
+
+                // Re-attach các event listeners cho form mới
+                setTimeout(() => {
+                    attachFormEventListeners();
+                }, 100);
+            }, 500);
+        });
+
+        // Gắn sự kiện cho nút "Tôi là khách mời"
+        document.getElementById('guest-btn').addEventListener('click', function() {
+            // Disable nút để tránh click nhiều lần
+            this.disabled = true;
+            this.textContent = 'Đang xử lý...';
+
+            // Gọi API với type=2
+            fetch("/?type=2", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(memberData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data && (data.code === 200 || data.code === 409)) {
+                        showSuccessResult(data.data.id, data.data.deviceId);
+                    }
+                    else if (data && data.code === 403) {
+                        showErrorResult("HẾT GIỜ ĐĂNG KÝ");
+                    }
+                    else {
+                        showErrorResult("LỖI HỆ THỐNG");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    this.disabled = false;
+                    this.textContent = 'Tôi là khách mời';
+                });
+        });
+    }, 500);
+}
+
+// Tách riêng function để attach event listeners
+function attachFormEventListeners() {
+    const newFullnameInput = document.getElementById('fullname');
+    const newBirthdateInput = document.getElementById('birthdate');
+    const newRegistrationForm = document.getElementById('registration-form');
+    const newSubmitBtn = document.getElementById('submit-btn');
+
+    newFullnameInput.addEventListener('input', function() {
+        this.classList.remove('error');
+        document.getElementById('fullname-error').classList.remove('show');
+    });
+
+    newBirthdateInput.addEventListener('input', function() {
+        this.classList.remove('error');
+        document.getElementById('birthdate-error').classList.remove('show');
+    });
+
+    newFullnameInput.addEventListener('blur', function() {
+        const value = this.value.trim();
+        if (value) {
+            const capitalized = value.replace(/\s+/g, ' ')
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' ');
+            this.value = capitalized;
+        }
+    });
+
+    newBirthdateInput.addEventListener('blur', function() {
+        const value = this.value.trim();
+        if (value) {
+            const result = formatBirthdateInput(value);
+            if (result.formatted) {
+                this.value = result.formatted;
+            }
+        }
+    });
+
+    newRegistrationForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        let isValid = true;
+
+        const fullname = newFullnameInput.value.trim();
+        const fullnameValidation = validateFullname(fullname);
+
+        if (!fullnameValidation.valid) {
+            newFullnameInput.classList.add('error');
+            document.getElementById('fullname-error').textContent = fullnameValidation.message;
+            document.getElementById('fullname-error').classList.add('show');
+            isValid = false;
+        }
+
+        const birthdate = newBirthdateInput.value.trim();
+        const birthdateValidation = validateBirthdate(birthdate);
+
+        if (!birthdateValidation.valid) {
+            newBirthdateInput.classList.add('error');
+            document.getElementById('birthdate-error').textContent = birthdateValidation.message;
+            document.getElementById('birthdate-error').classList.add('show');
+            isValid = false;
+        } else {
+            newBirthdateInput.value = birthdateValidation.formatted;
+        }
+
+        if (isValid) {
+            newSubmitBtn.disabled = true;
+            newSubmitBtn.textContent = 'Đang xử lý...';
+
+            const member = {
+                name: fullnameValidation.cleaned,
+                dateOfBirth: birthdateValidation.formatted
+            };
+
+            fetch("/?type=1", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(member)
+            })
+                .then(response => {
+                    return response.json().then(data => {
+                        if (data && (data.code === 200 || data.code === 409)) {
+                            showSuccessResult(data.data.id, data.data.deviceId);
+                        }
+                        else if (data && data.code === 404) {
+                            showNotFoundForm(member);
+                        }
+                        else if (data && data.code === 403) {
+                            showErrorResult("HẾT GIỜ ĐĂNG KÝ");
+                        }
+                        else {
+                            showErrorResult("LỖI HỆ THỐNG");
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    newSubmitBtn.disabled = false;
+                    newSubmitBtn.textContent = 'Xác nhận';
+                });
+        }
+    });
+}
 
 function showErrorResult(msg) {
     const resultContent = document.getElementById('result-content');

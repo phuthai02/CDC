@@ -16,6 +16,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import project.smarthome.cdc.model.dto.CDCResponse;
+import project.smarthome.cdc.model.dto.MemberData;
 import project.smarthome.cdc.model.entity.Member;
 import project.smarthome.cdc.model.entity.RequestLog;
 import project.smarthome.cdc.model.entity.SystemConfig;
@@ -28,9 +29,7 @@ import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -71,6 +70,9 @@ public class MemberServiceImpl implements MemberService {
             Runtime.getRuntime().availableProcessors()
     );
 
+    // Member data list
+    private Map<String, MemberData> memberDatas = new HashMap<>();
+
     // Thread-safe date formatters
     private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT =
             ThreadLocal.withInitial(() -> new SimpleDateFormat("dd/MM/yyyy"));
@@ -82,6 +84,9 @@ public class MemberServiceImpl implements MemberService {
      */
     @PostConstruct
     public void init() {
+        // Load member data từ Excel
+        loadMemberDataFromExcel();
+
         // Load template image và vẽ sẵn title
         asyncExecutor.submit(() -> {
             try {
@@ -94,7 +99,6 @@ public class MemberServiceImpl implements MemberService {
 
                 // Đợi font load xong
                 Thread.sleep(100);
-
                 if (customFont == null) {
                     customFont = new java.awt.Font("Arial", java.awt.Font.BOLD, 90);
                 }
@@ -103,7 +107,6 @@ public class MemberServiceImpl implements MemberService {
                 g2d.setFont(titleFont);
                 g2d.setColor(new Color(189, 14, 21));
                 g2d.drawString("CON SỐ MAY MẮN", 338, 306 + g2d.getFontMetrics(titleFont).getAscent());
-
                 g2d.dispose();
 
                 templateImage = baseImage;
@@ -131,8 +134,113 @@ public class MemberServiceImpl implements MemberService {
         });
     }
 
+    /**
+     * Load member data từ file Excel
+     */
+    private void loadMemberDataFromExcel() {
+        try {
+            ClassPathResource resource = new ClassPathResource("static/data/member_data.xlsx");
+
+            if (!resource.exists()) {
+                log.warn("[CDC] Member data file not found: static/data/member_data.xlsx");
+                return;
+            }
+
+            try (InputStream inputStream = resource.getInputStream();
+                 Workbook workbook = new XSSFWorkbook(inputStream)) {
+
+                Sheet sheet = workbook.getSheetAt(0);
+                int totalRows = 0;
+                int loadedCount = 0;
+                int skippedCount = 0;
+
+                // Bỏ qua header row (row 0)
+                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                    Row row = sheet.getRow(i);
+                    if (row == null) {
+                        continue;
+                    }
+
+                    totalRows++;
+
+                    // Đọc mã nhân viên (cột 0)
+                    Cell memberIDCell = row.getCell(0);
+                    String memberID = getCellValueAsString(memberIDCell);
+
+                    // Nếu mã nhân viên trống thì skip
+                    if (!StringUtils.hasText(memberID)) {
+                        skippedCount++;
+                        continue;
+                    }
+
+                    // Đọc các cột khác
+                    String memberName = getCellValueAsString(row.getCell(1));
+                    String memberDepartment = getCellValueAsString(row.getCell(2));
+                    String memberRole = getCellValueAsString(row.getCell(3));
+                    String memberDayOfBirth = getCellValueAsString(row.getCell(4));
+
+                    // Tạo MemberData object
+                    MemberData memberData = new MemberData();
+                    memberData.setMemberID(memberID.trim());
+                    memberData.setMemberName(memberName != null ? memberName.trim() : "");
+                    memberData.setMemberDepartment(memberDepartment != null ? memberDepartment.trim() : "");
+                    memberData.setMemberRole(memberRole != null ? memberRole.trim() : "");
+                    memberData.setMemberDayOfBirth(memberDayOfBirth != null ? memberDayOfBirth.trim() : "");
+
+                    String keyMember = memberData.getMemberName() + "_" + memberData.getMemberDayOfBirth();
+                    memberDatas.put(keyMember, memberData);
+
+                    loadedCount++;
+                }
+
+                log.info("[CDC] ===== MEMBER DATA LOADED =====");
+                log.info("[CDC] Total rows processed: {}", totalRows);
+                log.info("[CDC] Members loaded successfully: {}", loadedCount);
+                log.info("[CDC] Rows skipped (empty member ID): {}", skippedCount);
+                log.info("[CDC] ========================================");
+
+            }
+        } catch (Exception e) {
+            log.error("[CDC] Error loading member data from Excel", e);
+        }
+    }
+
+    /**
+     * Helper method để đọc cell value dưới dạng String
+     */
+    private String getCellValueAsString(Cell cell) {
+        if (cell == null) {
+            return "";
+        }
+
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return DATE_FORMAT.get().format(cell.getDateCellValue());
+                } else {
+                    // Nếu là số thì format về string, loại bỏ .0
+                    double numericValue = cell.getNumericCellValue();
+                    if (numericValue == (long) numericValue) {
+                        return String.valueOf((long) numericValue);
+                    } else {
+                        return String.valueOf(numericValue);
+                    }
+                }
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                return cell.getCellFormula();
+            case BLANK:
+                return "";
+            default:
+                return "";
+        }
+    }
+
     @Override
-    public CDCResponse create(Member member) {
+    public CDCResponse create(Member member, Integer type) {
         CDCResponse response = new CDCResponse();
         try {
             // Kiểm tra trùng lặp
@@ -149,6 +257,19 @@ public class MemberServiceImpl implements MemberService {
                 return response;
             }
 
+            // Kiểm tra nhân sự nguồn
+            if (type == 1) {
+                String keyMember = member.getName() + "_" + DATE_FORMAT.get().format(member.getDateOfBirth());
+                MemberData memberData = memberDatas.get(keyMember);
+                if (memberData == null) {
+                    response.setCode(RESPONSE_NOT_FOUND);
+                    return response;
+                }
+                member.setMemberId(memberData.getMemberID());
+                member.setMemberDepartment(memberData.getMemberDepartment());
+                member.setMemberRole(memberData.getMemberRole());
+            }
+
             // Tạo deviceId
             member.setDeviceId(UUID.randomUUID().toString());
             member.setCreatedTime(new Timestamp(System.currentTimeMillis()));
@@ -158,11 +279,11 @@ public class MemberServiceImpl implements MemberService {
             while (true) {
                 memberDB = memberRepository.save(member);
                 String idStr = memberDB.getId().toString();
-
                 boolean isBad = badSuffixSet.stream()
                         .anyMatch(idStr::endsWith);
 
                 if (!isBad) break;
+
                 memberRepository.delete(memberDB);
             }
 
@@ -173,6 +294,7 @@ public class MemberServiceImpl implements MemberService {
             asyncExecutor.submit(() ->
                     messagingTemplate.convertAndSend("/topic/event", "CREATE")
             );
+
         } catch (Exception e) {
             log.error("[CDC] Error in create", e);
             response.setCode(RESPONSE_ERROR);
@@ -237,12 +359,10 @@ public class MemberServiceImpl implements MemberService {
             g2d.setFont(numberFont);
             g2d.setColor(new Color(189, 14, 21));
             g2d.drawString(luckyNumber, 418, 366 + g2d.getFontMetrics(numberFont).getAscent());
-
             g2d.dispose();
 
             // Lưu file và convert sang byte[]
             ImageIO.write(image, "png", outputFile);
-
             log.info("[CDC] Image created: {} with lucky number: {}", fileName, luckyNumber);
 
             // Đọc file vừa tạo thành byte[]
@@ -265,8 +385,10 @@ public class MemberServiceImpl implements MemberService {
                 response.setCode(RESPONSE_NOT_FOUND);
                 return response;
             }
+
             response.setCode(RESPONSE_SUCCESS);
             response.setData(memberDB.getDeviceId());
+
         } catch (Exception e) {
             log.error("[CDC] Error in login", e);
             response.setCode(RESPONSE_ERROR);
@@ -303,6 +425,7 @@ public class MemberServiceImpl implements MemberService {
             asyncExecutor.submit(() ->
                     messagingTemplate.convertAndSend("/topic/event", "UPDATE")
             );
+
         } catch (Exception e) {
             log.error("[CDC] Error in update", e);
             response.setCode(RESPONSE_ERROR);
@@ -335,6 +458,7 @@ public class MemberServiceImpl implements MemberService {
             asyncExecutor.submit(() ->
                     messagingTemplate.convertAndSend("/topic/event", "DELETE")
             );
+
         } catch (Exception e) {
             log.error("[CDC] Error in delete", e);
             response.setCode(RESPONSE_ERROR);
@@ -360,6 +484,7 @@ public class MemberServiceImpl implements MemberService {
 
             response.setCode(RESPONSE_SUCCESS);
             response.setData(data);
+
         } catch (Exception e) {
             log.error("[CDC] Error in getData", e);
             response.setCode(RESPONSE_ERROR);
@@ -392,7 +517,6 @@ public class MemberServiceImpl implements MemberService {
                 // Header row
                 String[] headers = {"STT", "Số May Mắn", "Họ và Tên", "Ngày Sinh", "Tạo lúc"};
                 Row headerRow = sheet.createRow(0);
-
                 for (int i = 0; i < headers.length; i++) {
                     Cell cell = headerRow.createCell(i);
                     cell.setCellValue(headers[i]);
@@ -450,6 +574,7 @@ public class MemberServiceImpl implements MemberService {
         CDCResponse response = new CDCResponse();
         try {
             SystemConfig systemConfig = systemConfigRepository.findFirstByKey(SCK_ALLOW_CREATE);
+
             if (systemConfig != null) {
                 systemConfig.setData("Y".equals(systemConfig.getData()) ? "N" : "Y");
                 systemConfigRepository.save(systemConfig);
@@ -467,6 +592,7 @@ public class MemberServiceImpl implements MemberService {
             asyncExecutor.submit(() ->
                     messagingTemplate.convertAndSend("/topic/event", "TOGGLE_ALLOW_CREATE")
             );
+
         } catch (Exception e) {
             log.error("[CDC] Error in toggleAllowCreate", e);
             response.setCode(RESPONSE_ERROR);
@@ -549,6 +675,7 @@ public class MemberServiceImpl implements MemberService {
         headerFont.setColor(IndexedColors.WHITE.getIndex());
         headerFont.setFontHeightInPoints((short) 12);
         headerStyle.setFont(headerFont);
+
         headerStyle.setAlignment(HorizontalAlignment.CENTER);
         headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
@@ -565,7 +692,6 @@ public class MemberServiceImpl implements MemberService {
         cellStyle.setBorderLeft(BorderStyle.THIN);
         cellStyle.setBorderRight(BorderStyle.THIN);
         cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-
         return cellStyle;
     }
 
