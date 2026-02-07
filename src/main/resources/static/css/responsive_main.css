@@ -552,3 +552,58 @@
         font-size: 0.95em;
     }
 }
+
+/* ==================== LOADING SCREEN RESPONSIVE ==================== */
+
+/* Tablet & Mobile - 768px and below */
+@media (max-width: 768px) {
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border-width: 5px;
+        margin-bottom: 15px;
+    }
+
+    .loading-text {
+        font-size: 1.3em;
+    }
+}
+
+/* Small Mobile - 480px and below */
+@media (max-width: 480px) {
+    .loading-spinner {
+        width: 45px;
+        height: 45px;
+        border-width: 4px;
+    }
+
+    .loading-text {
+        font-size: 1.2em;
+    }
+}
+
+/* Extra Small Mobile - 375px and below */
+@media (max-width: 375px) {
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+    }
+
+    .loading-text {
+        font-size: 1.1em;
+    }
+}
+
+/* Very Small Mobile - 320px and below */
+@media (max-width: 320px) {
+    .loading-spinner {
+        width: 35px;
+        height: 35px;
+        border-width: 3px;
+        margin-bottom: 12px;
+    }
+
+    .loading-text {
+        font-size: 1em;
+    }
+}

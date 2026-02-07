@@ -143,13 +143,11 @@ button {
     from {
         opacity: 0;
         transform:
-                rotateY(-135deg)
                 scale(0.6);
     }
     to {
         opacity: 1;
         transform:
-                rotateY(0)
                 scale(1);
     }
 }
@@ -998,4 +996,45 @@ button {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none !important;
+}
+
+/* ==================== LOADING SCREEN ==================== */
+#loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #FFF4D6;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100000;
+    transition: opacity 0.5s ease-out;
+}
+
+#loading-screen.hide {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 6px solid rgba(220, 20, 60, 0.2);
+    border-top-color: #DC143C;
+    border-radius: 50%;
+    margin-bottom: 20px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-text {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: #DC143C;
 }

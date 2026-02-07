@@ -62,6 +62,7 @@ public class MemberServiceImpl implements MemberService {
     private static final Integer RESPONSE_EXPIRED = 403;
     private static final String[] BAD_SUFFIX = {"13", "49", "53"};
     private static final String SCK_ALLOW_CREATE = "SCK_ALLOW_CREATE";
+    private static final String DOWNLOAD_PATH = "src/main/resources/static/downloads/";
 
     // Pre-loaded resources
     private BufferedImage templateImage;
@@ -290,6 +291,10 @@ public class MemberServiceImpl implements MemberService {
             response.setCode(RESPONSE_SUCCESS);
             response.setData(memberDB);
 
+            // TẠO ẢNH ASYNC NGAY SAU KHI CREATE THÀNH CÔNG
+            Member finalMemberDB = memberDB;
+            generateLuckyImageAsync(finalMemberDB.getId());
+
             // Push event async
             asyncExecutor.submit(() ->
                     messagingTemplate.convertAndSend("/topic/event", "CREATE")
@@ -338,7 +343,7 @@ public class MemberServiceImpl implements MemberService {
             // Format ID as 3 digits: 001, 021, 111
             String luckyNumber = String.format("%03d", member.getId());
             String fileName = "lucky_number_" + luckyNumber + ".png";
-            String outputPath = "src/main/resources/static/downloads/" + fileName;
+            String outputPath = DOWNLOAD_PATH + fileName;
             File outputFile = new File(outputPath);
 
             // Kiểm tra nếu ảnh đã tồn tại thì đọc và return luôn
@@ -348,6 +353,9 @@ public class MemberServiceImpl implements MemberService {
                     return fis.readAllBytes();
                 }
             }
+
+            // Nếu chưa tồn tại, tạo ngay (fallback - trường hợp async chưa kịp tạo)
+            log.warn("[CDC] Image not found, generating now: {}", fileName);
 
             // Tạo thư mục nếu chưa có
             File parentDir = outputFile.getParentFile();
@@ -369,7 +377,7 @@ public class MemberServiceImpl implements MemberService {
 
             // Lưu file và convert sang byte[]
             ImageIO.write(image, "png", outputFile);
-            log.info("[CDC] Image created: {} with lucky number: {}", fileName, luckyNumber);
+            log.info("[CDC] Image created on-demand: {} with lucky number: {}", fileName, luckyNumber);
 
             // Đọc file vừa tạo thành byte[]
             try (FileInputStream fis = new FileInputStream(outputFile)) {
@@ -455,6 +463,15 @@ public class MemberServiceImpl implements MemberService {
             if (memberDB == null) {
                 response.setCode(RESPONSE_NOT_FOUND);
                 return response;
+            }
+
+            // Xóa ảnh nếu tồn tại
+            String luckyNumber = String.format("%03d", memberDB.getId());
+            String fileName = "lucky_number_" + luckyNumber + ".png";
+            File imageFile = new File(DOWNLOAD_PATH + fileName);
+            if (imageFile.exists()) {
+                imageFile.delete();
+                log.info("[CDC] Deleted image file: {}", fileName);
             }
 
             // Save log async
@@ -621,6 +638,51 @@ public class MemberServiceImpl implements MemberService {
     }
 
     // ===== Private Helper Methods =====
+
+    /**
+     * Tạo ảnh may mắn async (không block response)
+     */
+    private void generateLuckyImageAsync(Integer memberId) {
+        asyncExecutor.submit(() -> {
+            try {
+                String luckyNumber = String.format("%03d", memberId);
+                String fileName = "lucky_number_" + luckyNumber + ".png";
+                String outputPath = DOWNLOAD_PATH + fileName;
+                File outputFile = new File(outputPath);
+
+                // Nếu đã tồn tại thì skip
+                if (outputFile.exists()) {
+                    log.info("[CDC] Image already exists, skip generation: {}", fileName);
+                    return;
+                }
+
+                // Tạo thư mục nếu chưa có
+                File parentDir = outputFile.getParentFile();
+                if (!parentDir.exists()) {
+                    parentDir.mkdirs();
+                }
+
+                // Sử dụng template đã load sẵn
+                BufferedImage image = cloneImage(templateImage);
+                Graphics2D g2d = image.createGraphics();
+                configureGraphics(g2d);
+
+                // Vẽ số may mắn
+                java.awt.Font numberFont = customFont.deriveFont(java.awt.Font.BOLD, 90f);
+                g2d.setFont(numberFont);
+                g2d.setColor(new Color(189, 14, 21));
+                g2d.drawString(luckyNumber, 418, 366 + g2d.getFontMetrics(numberFont).getAscent());
+                g2d.dispose();
+
+                // Lưu file
+                ImageIO.write(image, "png", outputFile);
+                log.info("[CDC] Image generated async: {} with lucky number: {}", fileName, luckyNumber);
+
+            } catch (Exception e) {
+                log.error("[CDC] Error in generateLuckyImageAsync for memberId: {}", memberId, e);
+            }
+        });
+    }
 
     private void saveLog(String actor, String action, Object asIs, Object toBe) {
         try {

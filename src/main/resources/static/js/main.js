@@ -9,6 +9,14 @@ const birthdateInput = document.getElementById('birthdate');
 const petalsContainer = document.getElementById('petals-container');
 const submitBtn = document.getElementById('submit-btn');
 
+// ==================== LOADING SCREEN ====================
+window.addEventListener('load', function() {
+    const loadingScreen = document.getElementById('loading-screen');
+    setTimeout(() => {
+        loadingScreen.classList.add('hide');
+    }, 100);
+});
+
 // Hàm tải xuống hình ảnh khi click/tap
 function downloadOnClick() {
     const deviceId = localStorage.getItem("deviceId");
